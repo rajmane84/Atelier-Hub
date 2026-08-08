@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { toast } from 'sonner';
@@ -75,9 +75,6 @@ export default function AvatarUpload({
             src={displayImage || '/fallback-avatar.webp'}
             alt={name}
           />
-          <AvatarFallback className="rounded-2xl text-2xl sm:text-4xl md:text-5xl font-display">
-            {name.charAt(0).toUpperCase()}
-          </AvatarFallback>
         </Avatar>
 
         <span

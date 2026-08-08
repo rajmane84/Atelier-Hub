@@ -13,7 +13,7 @@ import {
 import { EmailVerificationCard } from '@/components/auth/email-verification-card';
 import { LoadingState } from '@/components/loading-state';
 import { ErrorState } from '@/components/error-state';
-import { useClientProfile } from '@/hooks/client/profile';
+import { useClientProfile, useClientStats } from '@/hooks/client/profile';
 import { useListings } from '@/hooks/listing';
 import { ListingCard } from '@/components/listing/listing-card';
 import { toast } from 'sonner';
@@ -28,6 +28,7 @@ export default function ClientDashboard() {
     error: profileError,
     refetch: refetchProfile,
   } = useClientProfile();
+  const { data: statsData } = useClientStats();
   const { data: listingsData } = useListings();
   const user = sessionData?.user;
 
@@ -66,6 +67,7 @@ export default function ClientDashboard() {
     (l) => !l.status || l.status === 'ACTIVE'
   ).length;
   const recentListings = listings.slice(0, 3);
+  const stats = statsData?.data;
 
   return (
     <div className="w-full bg-background">
@@ -161,7 +163,12 @@ export default function ClientDashboard() {
         </div>
 
         {/* Section 2: Key Metrics & Stat Cards */}
-        <ClientStatsCards activeListings={activeListingsCount} />
+        <ClientStatsCards
+          activeListings={stats?.activeListings ?? activeListingsCount}
+          applicationsReceived={stats?.applicationsReceived ?? 0}
+          savedCreatives={stats?.savedCreatives ?? 0}
+          avgTimeToFirstApp={stats?.avgTimeToFirstApp ?? '—'}
+        />
 
         {/* Section 3: Recent Listings Preview */}
         <div className="border-t border-border pt-8">

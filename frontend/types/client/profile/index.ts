@@ -54,3 +54,12 @@ export interface UpdateClientProfileData {
   phoneNumber?: string;
   location?: string;
 }
+
+export interface ClientStats {
+  activeListings: number;
+  totalListings: number;
+  closedListings: number;
+  applicationsReceived: number;
+  savedCreatives: number;
+  avgTimeToFirstApp: string;
+}

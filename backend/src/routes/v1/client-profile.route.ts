@@ -8,6 +8,7 @@ import {
   handleGetClientProfile,
   handleUpdateClientProfile,
   handleUpdateClientCoverImage,
+  handleGetClientStats,
 } from '../../controllers/client-profile.controller';
 import { handleUpdateAvatar } from '../../controllers/profile.controller';
 
@@ -17,6 +18,7 @@ const router = Router();
 router.use(authenticate, requireClient);
 
 router.get('/', handleGetClientProfile);
+router.get('/stats', handleGetClientStats);
 router.patch(
   '/',
   validate(updateClientProfileSchema),

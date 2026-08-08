@@ -3,12 +3,18 @@ import type { SuccessResponse } from '@/types/api';
 import type {
   ProfileData,
   UpdateClientProfileData,
+  ClientStats,
 } from '@/types/client/profile';
 
 export const clientProfileService = {
   getProfile: async (): Promise<SuccessResponse<ProfileData>> => {
     const response = await axios.get('/client-profile');
     return response.data as SuccessResponse<ProfileData>;
+  },
+
+  getStats: async (): Promise<SuccessResponse<ClientStats>> => {
+    const response = await axios.get('/client-profile/stats');
+    return response.data as SuccessResponse<ClientStats>;
   },
 
   updateProfile: async (

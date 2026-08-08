@@ -9,6 +9,7 @@ import {
   getPublicIdFromUrl,
 } from '../util/cloudinary';
 import { getLocationFromRequest } from '../util/geolocation';
+import { getClientStats } from '../services/client-profile.service';
 
 export const handleGetClientProfile = asyncHandler(
   async (req: Request, res: Response) => {
@@ -194,6 +195,18 @@ export const handleUpdateClientCoverImage = asyncHandler(
       res,
       updatedProfile,
       'Cover image updated successfully'
+    );
+  }
+);
+
+export const handleGetClientStats = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const stats = await getClientStats(userId);
+    return ApiResponse.success(
+      res,
+      stats,
+      'Client stats retrieved successfully'
     );
   }
 );
