@@ -7,6 +7,7 @@ import { FreelancerDiscoverItem, formatRate } from './mock-data';
 import { Star } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AvailabilityBadge } from './availability-badge';
+import { SaveButton } from '@/components/shared/save-button';
 
 interface FreelancerDiscoverCardProps {
   freelancer: FreelancerDiscoverItem;
@@ -57,8 +58,13 @@ export function FreelancerDiscoverCard({
           )}
           <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent" />
 
-          {/* Availability badge — same solid-bg treatment as cult card */}
-          <div className="absolute top-3 right-3">
+          {/* Top badges — Save button & Availability */}
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+            <SaveButton
+              id={freelancer.id}
+              type="creative"
+              variant="card-badge"
+            />
             <AvailabilityBadge isAvailable={isAvailable} />
           </div>
 

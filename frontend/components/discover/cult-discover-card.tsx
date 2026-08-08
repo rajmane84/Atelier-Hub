@@ -7,6 +7,7 @@ import { CultDiscoverItem } from './mock-data';
 import { Users, Star } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AvailabilityBadge } from './availability-badge';
+import { SaveButton } from '@/components/shared/save-button';
 
 interface CultDiscoverCardProps {
   cult: CultDiscoverItem;
@@ -42,7 +43,9 @@ export function CultDiscoverCard({ cult, href }: CultDiscoverCardProps) {
           />
           <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent" />
 
-          <div className="absolute top-3 right-3">
+          {/* Top badges — Save button & Availability */}
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+            <SaveButton id={cult.id} type="cult" variant="card-badge" />
             <AvailabilityBadge isAvailable={isAvailable} />
           </div>
 

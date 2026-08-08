@@ -14,6 +14,7 @@ import portfolioRouter from './portfolio.route';
 import discoverRouter from './discover.route';
 import reviewRouter from './review.route';
 import listingRouter from './listing.route';
+import savedRouter from './saved.route';
 
 const router = Router();
 
@@ -28,6 +29,7 @@ router.use('/portfolio', portfolioRouter);
 router.use('/discover', discoverRouter);
 router.use('/reviews', reviewRouter);
 router.use('/listings', listingRouter);
+router.use('/saved', savedRouter);
 
 router.get('/health', (_, res) => {
   const healthCheck = {

@@ -4,7 +4,6 @@ import {
   Users,
   Heart,
   MessageSquare,
-  Receipt,
   Settings,
   User,
   FileText,
@@ -74,7 +73,7 @@ export const DASHBOARD_NAVIGATION = {
     },
     {
       href: '/dashboard/client/saved',
-      label: 'Saved Creatives',
+      label: 'Saved Items',
       icon: Heart,
     },
     {
@@ -82,11 +81,11 @@ export const DASHBOARD_NAVIGATION = {
       label: 'Messages',
       icon: MessageSquare,
     },
-    {
-      href: '/dashboard/client/invoices',
-      label: 'Invoices',
-      icon: Receipt,
-    },
+    // {
+    //   href: '/dashboard/client/invoices',
+    //   label: 'Invoices',
+    //   icon: Receipt,
+    // },
   ],
 
   ADMIN: [

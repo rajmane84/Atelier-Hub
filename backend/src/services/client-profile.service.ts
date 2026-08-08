@@ -11,32 +11,39 @@ export const getClientStats = async (userId: string): Promise<ClientStats> => {
     throw new NotFoundError('Client profile not found');
   }
 
-  const [activeListings, totalListings, closedListings] = await Promise.all([
-    prisma.listing.count({
-      where: {
-        clientProfileId: clientProfile.id,
-        status: 'ACTIVE',
-      },
-    }),
-    prisma.listing.count({
-      where: {
-        clientProfileId: clientProfile.id,
-      },
-    }),
-    prisma.listing.count({
-      where: {
-        clientProfileId: clientProfile.id,
-        status: { in: ['CLOSED', 'FILLED'] },
-      },
-    }),
-  ]);
+  const db = prisma as any;
+  const [activeListings, totalListings, closedListings, savedCreatives] =
+    await Promise.all([
+      prisma.listing.count({
+        where: {
+          clientProfileId: clientProfile.id,
+          status: 'ACTIVE',
+        },
+      }),
+      prisma.listing.count({
+        where: {
+          clientProfileId: clientProfile.id,
+        },
+      }),
+      prisma.listing.count({
+        where: {
+          clientProfileId: clientProfile.id,
+          status: { in: ['CLOSED', 'FILLED'] },
+        },
+      }),
+      db.savedCreative
+        .count({
+          where: { userId },
+        })
+        .catch(() => 0),
+    ]);
 
   return {
     activeListings,
     totalListings,
     closedListings,
     applicationsReceived: 0,
-    savedCreatives: 0,
+    savedCreatives,
     avgTimeToFirstApp: '—',
   };
 };
