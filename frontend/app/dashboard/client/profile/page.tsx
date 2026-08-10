@@ -63,6 +63,7 @@ export default function ClientProfilePage() {
             foundedYear={clientProfile.foundedYear}
             website={clientProfile.website}
             phoneNumber={clientProfile.phoneNumber}
+            phoneVerified={clientProfile.phoneVerified}
           />
         </div>
       </div>

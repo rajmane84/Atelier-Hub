@@ -6,7 +6,7 @@ import { env } from './util/env';
 import V1Router from './routes/v1/index';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import { errorHandler } from './middlewares/errorHandler';
-import { rateLimiter } from './util/rateLimiter';
+import { rateLimiter, emailRateLimiter } from './util/rateLimiter';
 
 const app = express();
 
@@ -31,6 +31,10 @@ app.use(
     credentials: true,
   })
 );
+
+app.use('/api/auth/send-verification-email', emailRateLimiter);
+app.use('/api/auth/forget-password', emailRateLimiter);
+app.use('/api/auth/reset-password', emailRateLimiter);
 
 app.all('/api/auth/{*any}', toNodeHandler(auth));
 

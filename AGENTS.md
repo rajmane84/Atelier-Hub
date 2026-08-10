@@ -97,6 +97,10 @@ When building new features, always adhere to the following strictly separated fl
 - **Strict `dd/mm/yyyy` Format**: All dates displayed across the UI (forms, listing cards, profiles, tables, details views, and pickers) MUST be formatted as `dd/mm/yyyy` (e.g., `15/08/2026`).
 - Do NOT use `mm/dd/yyyy` or default locale strings that render month before day.
 
+## Database & Schema Migrations
+
+- **Prisma Migrations**: When modifying Prisma schemas (`backend/prisma/schema.prisma`), **NEVER** run `prisma migrate` commands (such as `bunx --bun prisma migrate dev` or `prisma migrate deploy`). **ONLY** run `bun run prisma:generate` (or `bunx --bun prisma generate`) to regenerate the Prisma Client types. The user will run migration commands manually.
+
 ## Code Quality & Cleanup
 
 - **Remove Unused Code**: If you find any unused variables, imports, components, or functions while working in a file, proactively remove them to keep the codebase clean. Never leave dead code behind.

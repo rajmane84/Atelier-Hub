@@ -11,7 +11,6 @@ export const getClientStats = async (userId: string): Promise<ClientStats> => {
     throw new NotFoundError('Client profile not found');
   }
 
-  const db = prisma as any;
   const [activeListings, totalListings, closedListings, savedCreatives] =
     await Promise.all([
       prisma.listing.count({
@@ -31,7 +30,7 @@ export const getClientStats = async (userId: string): Promise<ClientStats> => {
           status: { in: ['CLOSED', 'FILLED'] },
         },
       }),
-      db.savedCreative
+      prisma.savedCreative
         .count({
           where: { userId },
         })

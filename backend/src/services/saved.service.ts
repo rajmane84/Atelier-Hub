@@ -30,8 +30,7 @@ export const saveCreative = async (
     throw new NotFoundError('Creative profile not found');
   }
 
-  const db = prisma as any;
-  const saved = await db.savedCreative.upsert({
+  const saved = await prisma.savedCreative.upsert({
     where: {
       userId_creativeProfileId: {
         userId,
@@ -52,9 +51,8 @@ export const unsaveCreative = async (
   userId: string,
   creativeProfileId: string
 ) => {
-  const db = prisma as any;
   try {
-    await db.savedCreative.delete({
+    await prisma.savedCreative.delete({
       where: {
         userId_creativeProfileId: {
           userId,
@@ -80,8 +78,7 @@ export const toggleSaveCreative = async (
     throw new NotFoundError('Creative profile not found');
   }
 
-  const db = prisma as any;
-  const existing = await db.savedCreative.findUnique({
+  const existing = await prisma.savedCreative.findUnique({
     where: {
       userId_creativeProfileId: {
         userId,
@@ -91,14 +88,14 @@ export const toggleSaveCreative = async (
   });
 
   if (existing) {
-    await db.savedCreative.delete({
+    await prisma.savedCreative.delete({
       where: {
         id: existing.id,
       },
     });
     return { isSaved: false };
   } else {
-    await db.savedCreative.create({
+    await prisma.savedCreative.create({
       data: {
         userId,
         creativeProfileId,
@@ -117,8 +114,7 @@ export const saveCult = async (userId: string, cultId: string) => {
     throw new NotFoundError('Cult not found');
   }
 
-  const db = prisma as any;
-  const saved = await db.savedCult.upsert({
+  const saved = await prisma.savedCult.upsert({
     where: {
       userId_cultId: {
         userId,
@@ -136,9 +132,8 @@ export const saveCult = async (userId: string, cultId: string) => {
 };
 
 export const unsaveCult = async (userId: string, cultId: string) => {
-  const db = prisma as any;
   try {
-    await db.savedCult.delete({
+    await prisma.savedCult.delete({
       where: {
         userId_cultId: {
           userId,
@@ -161,8 +156,7 @@ export const toggleSaveCult = async (userId: string, cultId: string) => {
     throw new NotFoundError('Cult not found');
   }
 
-  const db = prisma as any;
-  const existing = await db.savedCult.findUnique({
+  const existing = await prisma.savedCult.findUnique({
     where: {
       userId_cultId: {
         userId,
@@ -172,14 +166,14 @@ export const toggleSaveCult = async (userId: string, cultId: string) => {
   });
 
   if (existing) {
-    await db.savedCult.delete({
+    await prisma.savedCult.delete({
       where: {
         id: existing.id,
       },
     });
     return { isSaved: false };
   } else {
-    await db.savedCult.create({
+    await prisma.savedCult.create({
       data: {
         userId,
         cultId,
@@ -192,21 +186,20 @@ export const toggleSaveCult = async (userId: string, cultId: string) => {
 export const getSavedIds = async (
   userId: string
 ): Promise<SavedIdsResponse> => {
-  const db = prisma as any;
   const [savedCreatives, savedCults] = await Promise.all([
-    db.savedCreative.findMany({
+    prisma.savedCreative.findMany({
       where: { userId },
       select: { creativeProfileId: true },
     }),
-    db.savedCult.findMany({
+    prisma.savedCult.findMany({
       where: { userId },
       select: { cultId: true },
     }),
   ]);
 
   return {
-    creativeIds: savedCreatives.map((s: any) => s.creativeProfileId),
-    cultIds: savedCults.map((s: any) => s.cultId),
+    creativeIds: savedCreatives.map((s) => s.creativeProfileId),
+    cultIds: savedCults.map((s) => s.cultId),
   };
 };
 
@@ -219,22 +212,21 @@ export const getSavedItems = async (
     limit?: number;
   }
 ): Promise<SavedItemsListResponse> => {
-  const db = prisma;
   const type = options.type || 'ALL';
   const search = options.search ? options.search.toLowerCase().trim() : '';
   const page = options.page || 1;
   const limit = options.limit || 20;
 
   const [savedCreativesCount, savedCultsCount] = await Promise.all([
-    db.savedCreative.count({ where: { userId } }),
-    db.savedCult.count({ where: { userId } }),
+    prisma.savedCreative.count({ where: { userId } }),
+    prisma.savedCult.count({ where: { userId } }),
   ]);
 
   let creativeItems: SavedItemResponse[] = [];
   let cultItems: SavedItemResponse[] = [];
 
   if (type === 'ALL' || type === 'CREATIVE') {
-    const rawSavedCreatives = await db.savedCreative.findMany({
+    const rawSavedCreatives = await prisma.savedCreative.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -292,7 +284,7 @@ export const getSavedItems = async (
   }
 
   if (type === 'ALL' || type === 'CULT') {
-    const rawSavedCults = await db.savedCult.findMany({
+    const rawSavedCults = await prisma.savedCult.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {

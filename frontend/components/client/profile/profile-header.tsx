@@ -13,7 +13,9 @@ import {
   Share2,
   Building2,
   User as UserIcon,
+  Smartphone,
 } from 'lucide-react';
+import { PhoneVerificationModal } from './phone-verification-modal';
 import { AvatarUpload, CoverImageUpload, StatusTag } from '@/components/shared';
 import { ClientType } from '@/types';
 import { cn } from '@/lib/cn';
@@ -52,6 +54,7 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeader({ user, profile }: ProfileHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [localBio, setLocalBio] = useState(profile.bio);
   const [localLocation, setLocalLocation] = useState(profile.location);
   const { updateProfileMutation } = useUpdateClientProfile();
@@ -318,9 +321,11 @@ export default function ProfileHeader({ user, profile }: ProfileHeaderProps) {
           </div>
 
           {profile.phoneNumber && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Phone className="size-3.5 text-primary" />
-              <span>{profile.phoneNumber}</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <Phone className="size-3.5 text-primary" />
+                <span>{profile.phoneNumber}</span>
+              </div>
               {profile.phoneVerified ? (
                 <StatusTag
                   label="Verified"
@@ -337,6 +342,12 @@ export default function ProfileHeader({ user, profile }: ProfileHeaderProps) {
             </div>
           )}
         </div>
+
+        <PhoneVerificationModal
+          isOpen={isPhoneModalOpen}
+          onClose={() => setIsPhoneModalOpen(false)}
+          initialPhoneNumber={profile.phoneNumber}
+        />
 
         <div className="mt-5 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <Button
@@ -358,6 +369,20 @@ export default function ProfileHeader({ user, profile }: ProfileHeaderProps) {
               </>
             )}
           </Button>
+
+          {!profile.phoneVerified && (
+            <Button
+              type="button"
+              variant={'secondary'}
+              onClick={() => setIsPhoneModalOpen(true)}
+              size={'sm'}
+              className="w-full sm:w-auto transition-all duration-200 ease-out motion-reduce:transition-none"
+            >
+              <Smartphone className="size-3 mr-1.5" />
+              Verify Phone
+            </Button>
+          )}
+
           <Button
             type="button"
             variant={'default'}

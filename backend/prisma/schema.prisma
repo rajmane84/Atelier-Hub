@@ -220,6 +220,8 @@ model User {
   savedCreatives SavedCreative[]
   savedCults     SavedCult[]
 
+  phoneVerifications PhoneVerification[]
+
   @@unique([email])
   @@map("user")
 }
@@ -615,4 +617,22 @@ model SavedCult {
   @@unique([userId, cultId])
   @@index([userId])
   @@index([cultId])
+}
+
+model PhoneVerification {
+  id          String   @id @default(cuid())
+  userId      String
+  phoneNumber String
+  otpCode     String
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([phoneNumber])
+  @@map("phone_verification")
 }

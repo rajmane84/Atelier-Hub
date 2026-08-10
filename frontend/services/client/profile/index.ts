@@ -4,6 +4,9 @@ import type {
   ProfileData,
   UpdateClientProfileData,
   ClientStats,
+  SendPhoneOtpData,
+  VerifyPhoneOtpData,
+  VerifyPhoneOtpResponse,
 } from '@/types/client/profile';
 
 export const clientProfileService = {
@@ -54,5 +57,19 @@ export const clientProfileService = {
       }
     );
     return response.data as SuccessResponse<ProfileData['clientProfile']>;
+  },
+
+  sendPhoneOtp: async (
+    data: SendPhoneOtpData
+  ): Promise<SuccessResponse<{ phoneNumber: string }>> => {
+    const response = await axios.post('/client-profile/phone/send-otp', data);
+    return response.data as SuccessResponse<{ phoneNumber: string }>;
+  },
+
+  verifyPhoneOtp: async (
+    data: VerifyPhoneOtpData
+  ): Promise<SuccessResponse<VerifyPhoneOtpResponse>> => {
+    const response = await axios.post('/client-profile/phone/verify-otp', data);
+    return response.data as SuccessResponse<VerifyPhoneOtpResponse>;
   },
 };

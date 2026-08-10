@@ -26,6 +26,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.1106.0",
     "@openrouter/sdk": "^1.2.2",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",

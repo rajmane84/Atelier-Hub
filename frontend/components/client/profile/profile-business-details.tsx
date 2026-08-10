@@ -13,6 +13,8 @@ import { cn } from '@/lib/cn';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { PhoneVerificationModal } from './phone-verification-modal';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -40,6 +42,7 @@ interface ProfileBusinessDetailsProps {
   foundedYear?: string | null;
   website?: string | null;
   phoneNumber?: string | null;
+  phoneVerified?: boolean;
 }
 
 export default function ProfileBusinessDetails({
@@ -50,8 +53,10 @@ export default function ProfileBusinessDetails({
   foundedYear,
   website,
   phoneNumber,
+  phoneVerified,
 }: ProfileBusinessDetailsProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [localClientType, setLocalClientType] = useState(clientType);
   const [localCompanyName, setLocalCompanyName] = useState(companyName || '');
   const [localIndustry, setLocalIndustry] = useState<Industry | undefined>(
@@ -324,12 +329,10 @@ export default function ProfileBusinessDetails({
                 >
                   Phone Number
                 </Label>
-                <Input
+                <PhoneInput
                   id="phoneNumber"
-                  placeholder="e.g., +91 98765 43210"
                   value={localPhoneNumber}
-                  onChange={(e) => setLocalPhoneNumber(e.target.value)}
-                  className="rounded-none border-border focus-visible:ring-0 focus-visible:border-primary transition-colors duration-200 ease-out"
+                  onChange={(val) => setLocalPhoneNumber(val)}
                 />
               </div>
 
@@ -373,8 +376,22 @@ export default function ProfileBusinessDetails({
                     <dt className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       {detail.label}
                     </dt>
-                    <dd className="text-sm font-body text-foreground mt-0.5">
-                      {detail.value}
+                    <dd className="text-sm font-body text-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>{detail.value}</span>
+                      {detail.label === 'Phone' &&
+                        (phoneVerified ? (
+                          <span className="font-mono text-[10px] uppercase text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 font-medium">
+                            Verified
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setIsPhoneModalOpen(true)}
+                            className="font-mono text-[10px] uppercase text-primary bg-primary/10 border border-primary/30 px-1.5 py-0.5 hover:bg-primary/20 transition-colors"
+                          >
+                            Verify
+                          </button>
+                        ))}
                     </dd>
                   </div>
                 </div>
@@ -388,6 +405,12 @@ export default function ProfileBusinessDetails({
           )}
         </div>
       </div>
+
+      <PhoneVerificationModal
+        isOpen={isPhoneModalOpen}
+        onClose={() => setIsPhoneModalOpen(false)}
+        initialPhoneNumber={phoneNumber}
+      />
     </div>
   );
 }

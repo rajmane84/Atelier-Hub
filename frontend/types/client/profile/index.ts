@@ -63,3 +63,17 @@ export interface ClientStats {
   savedCreatives: number;
   avgTimeToFirstApp: string;
 }
+
+export interface SendPhoneOtpData {
+  phoneNumber: string;
+}
+
+export interface VerifyPhoneOtpData {
+  phoneNumber: string;
+  otpCode: string;
+}
+
+export interface VerifyPhoneOtpResponse {
+  phoneNumber: string;
+  phoneVerified: boolean;
+}
