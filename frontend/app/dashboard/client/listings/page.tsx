@@ -14,7 +14,7 @@ import { ListingFilters } from '@/components/listing/listing-filters';
 import { DeleteListingDialog } from '@/components/listing';
 import { useListings } from '@/hooks/listing';
 import { useDeleteListing, useUpdateListingStatus } from '@/hooks/listing';
-import { ListingStatus, Discipline } from '@/types';
+import { ListingStatus } from '@/types';
 import { cn } from '@/lib/cn';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
@@ -27,9 +27,6 @@ export default function ClientListingsPage() {
   const isEmailVerified = Boolean(sessionData?.user?.emailVerified);
 
   const [statusFilter, setStatusFilter] = useState<ListingStatus | undefined>();
-  const [disciplineFilter, setDisciplineFilter] = useState<
-    Discipline | undefined
-  >();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<{
     id: string;
@@ -54,7 +51,6 @@ export default function ClientListingsPage() {
     refetch,
   } = useListings({
     status: statusFilter,
-    discipline: disciplineFilter,
   });
 
   const { deleteListingMutation } = useDeleteListing({
@@ -91,11 +87,9 @@ export default function ClientListingsPage() {
 
   const handleClearFilters = () => {
     setStatusFilter(undefined);
-    setDisciplineFilter(undefined);
   };
 
-  const hasActiveFilters =
-    statusFilter !== undefined || disciplineFilter !== undefined;
+  const hasActiveFilters = statusFilter !== undefined;
   const listings = listingsData?.data || [];
   const hasTotalListings = (totalListingsData?.data?.length ?? 0) > 0;
 
@@ -167,9 +161,7 @@ export default function ClientListingsPage() {
         {hasTotalListings && (
           <ListingFilters
             statusFilter={statusFilter}
-            disciplineFilter={disciplineFilter}
             onStatusChange={setStatusFilter}
-            onDisciplineChange={setDisciplineFilter}
             onClearFilters={handleClearFilters}
             hasActiveFilters={hasActiveFilters}
           />

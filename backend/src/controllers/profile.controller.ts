@@ -112,7 +112,6 @@ export const handleUpdateProfile = asyncHandler(
       headline,
       bio,
       availability,
-      disciplines,
       rateType,
       rateAmount,
       experienceYears,
@@ -136,8 +135,6 @@ export const handleUpdateProfile = asyncHandler(
           availability !== undefined
             ? availability
             : creativeProfile.availability,
-        disciplines:
-          disciplines !== undefined ? disciplines : creativeProfile.disciplines,
         rateType: rateType !== undefined ? rateType : creativeProfile.rateType,
         // Explicit NEGOTIABLE clears any previously set amount.
         rateAmount:

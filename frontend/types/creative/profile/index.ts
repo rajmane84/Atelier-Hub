@@ -3,7 +3,6 @@ import {
   SkillExpertiseLevel,
   EmploymentType,
   Degree,
-  Discipline,
   RateType,
 } from '../../index';
 
@@ -30,7 +29,6 @@ export interface CreativeProfile {
   resumeUrl?: string | null;
   resumeFileName?: string | null;
   resumeUploadedAt?: string | null;
-  disciplines: Discipline[];
   rateType?: RateType | null;
   rateAmount?: number | null;
   experienceYears?: number | null;
@@ -104,7 +102,6 @@ export interface UpdateProfileData {
   headline?: string;
   bio?: string;
   availability?: AvailabilityStatus;
-  disciplines?: Discipline[];
   rateType?: RateType | null;
   rateAmount?: number | null;
   experienceYears?: number | null;

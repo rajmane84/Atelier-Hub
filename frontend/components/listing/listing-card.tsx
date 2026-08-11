@@ -11,8 +11,6 @@ import {
   Lock,
   CheckCircle2,
   FileEdit,
-  Archive,
-  Radio,
   ArrowUpRight,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -53,7 +51,6 @@ interface ListingCardProps {
     budgetMax?: number | null;
     rateType?: RateType | null;
     currency?: Currency | null;
-    discipline?: string | null;
     skills: string[];
     deadline?: string | null;
     duration?: string | null;
@@ -98,35 +95,30 @@ export function ListingCard({
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-emerald-100/80 text-emerald-800 border border-emerald-300/80 shadow-xs">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <Radio className="size-3 text-emerald-600 shrink-0" />
-            Active Listing
-          </span>
-        );
-      case ListingStatus.CLOSED:
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-red-100/90 text-red-900 border border-red-300 shadow-xs">
-            <Lock className="size-3 text-red-600 shrink-0" />
-            Closed Listing
+            Active
           </span>
         );
       case ListingStatus.DRAFT:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-amber-100/90 text-amber-900 border border-amber-300 shadow-xs">
-            <FileEdit className="size-3 text-amber-600 shrink-0" />
-            Unpublished Draft
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-amber-100/80 text-amber-800 border border-amber-300/80">
+            Draft
           </span>
         );
       case ListingStatus.FILLED:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-indigo-100/90 text-indigo-900 border border-indigo-300 shadow-xs">
-            <CheckCircle2 className="size-3 text-indigo-600 shrink-0" />
-            Position Filled
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-blue-100/80 text-blue-800 border border-blue-300/80">
+            Filled
+          </span>
+        );
+      case ListingStatus.CLOSED:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-red-100/80 text-red-800 border border-red-300/80">
+            Closed
           </span>
         );
       case ListingStatus.ARCHIVED:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-slate-200/90 text-slate-800 border border-slate-300 shadow-xs">
-            <Archive className="size-3 text-slate-600 shrink-0" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-widest bg-gray-100/80 text-gray-800 border border-gray-300/80">
             Archived
           </span>
         );
@@ -210,12 +202,6 @@ export function ListingCard({
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {getStatusBadge(listing.status)}
-
-              {listing.discipline && (
-                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground bg-muted/60 px-2 py-0.5 border border-border/60">
-                  {listing.discipline.replace(/_/g, ' ')}
-                </span>
-              )}
             </div>
             <h3
               className={cn(

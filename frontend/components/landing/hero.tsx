@@ -95,8 +95,8 @@ export default function Hero() {
           className="font-editorial col-span-12 mt-8 text-lg leading-snug md:col-span-5 md:col-start-8 md:mt-16 md:text-xl"
         >
           Where solo talent meets collective power. A home for photographers,
-          dancers, directors and every discipline in between — hire one, or hire
-          the whole cult.
+          dancers, directors and every skill in between — hire one, or hire the
+          whole cult.
         </motion.div>
       </div>
 

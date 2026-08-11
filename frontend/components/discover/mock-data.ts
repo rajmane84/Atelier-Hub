@@ -16,7 +16,6 @@ export interface CultDiscoverItem {
   coverImage: string;
   avatarUrl: string;
   members: CultMemberDetail[];
-  disciplines: Discipline[];
   tags: string[];
   location: string;
   startingPrice: string;
@@ -43,7 +42,6 @@ export interface FreelancerDiscoverItem {
   avatarUrl: string;
   coverImage: string;
   location: string;
-  disciplines: Discipline[];
   skills: string[];
   // Null when a real creative hasn't set a rate yet — distinct from
   // rateType === 'NEGOTIABLE', which is an explicit choice.
@@ -65,22 +63,17 @@ export interface FreelancerDiscoverItem {
 export type DiscoverItem = CultDiscoverItem | FreelancerDiscoverItem;
 
 export const CATEGORIES = [
-  'All Disciplines',
-  'Film & Video',
-  '3D & VFX',
-  'Fashion & Styling',
-  'Sound & Audio',
-  'Design & Brand',
-  'Photography',
-  'Motion Graphics',
+  'All Skills',
+  'ARRI Alexa',
+  'Anamorphic Lenses',
+  'Color Grading',
+  'Lighting Direction',
+  'Unreal Engine 5',
+  'Blender 3D',
+  'Modular Synths',
+  'Costume Design',
+  'Custom FPV Rigs',
 ] as const;
-
-// Mirrors the backend `Discipline` enum. 'All Disciplines' is a filter-UI
-// option only, never a value a profile can actually hold.
-export type Discipline = Exclude<
-  (typeof CATEGORIES)[number],
-  'All Disciplines'
->;
 
 // Mirrors the backend `RateType` enum.
 export type RateType = 'HOURLY' | 'DAILY' | 'PROJECT' | 'NEGOTIABLE';
@@ -177,7 +170,6 @@ export const MOCK_CULTS: CultDiscoverItem[] = [
         username: 'tariqaudio',
       },
     ],
-    disciplines: ['Film & Video', 'Fashion & Styling', 'Photography'],
     tags: ['Cinema Film', 'Editorial', 'Heritage Weddings', 'Single Escrow'],
     location: 'Mumbai / Udaipur',
     startingPrice: '₹4,20,000',
@@ -259,7 +251,6 @@ export const MOCK_CULTS: CultDiscoverItem[] = [
         username: 'alexunreal',
       },
     ],
-    disciplines: ['3D & VFX', 'Motion Graphics', 'Design & Brand'],
     tags: ['Unreal Engine 5', 'Houdini FX', 'Octane Render', 'Spatial 3D'],
     location: 'Bengaluru / Remote',
     startingPrice: '₹3,50,000',
@@ -322,7 +313,6 @@ export const MOCK_CULTS: CultDiscoverItem[] = [
         username: 'sidatmos',
       },
     ],
-    disciplines: ['Sound & Audio', 'Film & Video'],
     tags: ['Dolby Atmos', 'Analog Synths', 'Foley Recording', 'Film Score'],
     location: 'Goa / Mumbai',
     startingPrice: '₹1,80,000',
@@ -386,7 +376,6 @@ export const MOCK_CULTS: CultDiscoverItem[] = [
         username: 'vikramsets',
       },
     ],
-    disciplines: ['Fashion & Styling', 'Photography', 'Design & Brand'],
     tags: ['Editorial Fashion', 'Runway Direction', 'Set Design', 'Lookbooks'],
     location: 'New Delhi / Mumbai',
     startingPrice: '₹2,90,000',

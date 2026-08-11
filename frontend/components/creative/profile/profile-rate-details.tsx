@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Wrench, Edit2, Plus, X, Loader2, IndianRupee } from 'lucide-react';
-import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,12 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Discipline, DISCIPLINE_LABELS, RateType } from '@/types';
+import { RateType } from '@/types';
 import { useUpdateProfile } from '@/hooks/creative/profile';
 import { handleApiError } from '@/lib/handle-error';
 
 interface ProfileRateDetailsProps {
-  disciplines: Discipline[];
   rateType?: RateType | null;
   rateAmount?: number | null;
   experienceYears?: number | null;
@@ -33,15 +31,12 @@ const RATE_TYPE_LABELS: Record<RateType, string> = {
 };
 
 export default function ProfileRateDetails({
-  disciplines,
   rateType,
   rateAmount,
   experienceYears,
   tools,
 }: ProfileRateDetailsProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [localDisciplines, setLocalDisciplines] =
-    useState<Discipline[]>(disciplines);
   const [localRateType, setLocalRateType] = useState<RateType | null>(
     rateType ?? null
   );
@@ -56,7 +51,6 @@ export default function ProfileRateDetails({
   const { updateProfileMutation } = useUpdateProfile();
 
   const handleEdit = () => {
-    setLocalDisciplines(disciplines);
     setLocalRateType(rateType ?? null);
     setLocalRateAmount(rateAmount != null ? String(rateAmount) : '');
     setLocalExperienceYears(
@@ -65,14 +59,6 @@ export default function ProfileRateDetails({
     setLocalTools(tools);
     setToolInput('');
     setIsEditing(true);
-  };
-
-  const toggleDiscipline = (discipline: Discipline) => {
-    setLocalDisciplines((prev) =>
-      prev.includes(discipline)
-        ? prev.filter((d) => d !== discipline)
-        : [...prev, discipline]
-    );
   };
 
   const handleAddTool = () => {
@@ -121,7 +107,6 @@ export default function ProfileRateDetails({
 
     updateProfileMutation.mutate(
       {
-        disciplines: localDisciplines,
         rateType: localRateType,
         rateAmount: parsedRateAmount,
         experienceYears: parsedExperienceYears,
@@ -143,7 +128,7 @@ export default function ProfileRateDetails({
         <div className="col-span-12 md:col-span-4">
           <div className="flex items-center justify-between gap-4 sticky top-8">
             <div className="font-mono text-xs uppercase tracking-widest opacity-60">
-              / Rate & Disciplines
+              / Rate & Tools
             </div>
             <Button
               type="button"
@@ -167,31 +152,6 @@ export default function ProfileRateDetails({
         <div className="col-span-12 md:col-span-8 space-y-8">
           {isEditing ? (
             <div className="space-y-6">
-              {/* Disciplines */}
-              <div className="space-y-3">
-                <Label className="font-mono text-[11px] uppercase tracking-widest text-foreground block">
-                  Disciplines
-                </Label>
-                <div className="flex flex-wrap gap-2">
-                  {Object.values(Discipline).map((discipline) => (
-                    <button
-                      key={discipline}
-                      type="button"
-                      onClick={() => toggleDiscipline(discipline)}
-                      className={cn(
-                        'px-4 py-2 rounded-none font-mono text-[10px] uppercase tracking-widest border transition-all duration-200 ease-out',
-                        'focus-visible:border-primary focus-visible:ring-0 outline-none cursor-pointer',
-                        localDisciplines.includes(discipline)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background text-foreground border-border hover:bg-muted/80'
-                      )}
-                    >
-                      {DISCIPLINE_LABELS[discipline]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Rate */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">
@@ -340,23 +300,6 @@ export default function ProfileRateDetails({
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="flex flex-wrap gap-2">
-                {disciplines.length > 0 ? (
-                  disciplines.map((d) => (
-                    <span
-                      key={d}
-                      className="font-mono text-[10px] uppercase tracking-widest border border-border bg-card px-3 py-1.5 text-foreground font-medium"
-                    >
-                      {DISCIPLINE_LABELS[d]}
-                    </span>
-                  ))
-                ) : (
-                  <p className="font-editorial text-lg text-foreground opacity-50">
-                    Add your disciplines so clients can find you
-                  </p>
-                )}
-              </div>
-
               <div className="flex flex-wrap gap-x-8 gap-y-2 font-mono text-xs text-muted-foreground">
                 <span>
                   Rate:{' '}

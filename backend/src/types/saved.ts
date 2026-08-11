@@ -12,7 +12,6 @@ export interface SavedCreativeData {
   availability: string;
   rateType: string | null;
   rateAmount: number | null;
-  disciplines: string[];
   skills: string[];
   rating: number | null;
   reviewCount: number;
@@ -38,7 +37,6 @@ export interface SavedCultData {
   rating: number | null;
   reviewCount: number;
   location: string | null;
-  disciplines: string[];
   members: Array<{
     id: string;
     name: string;

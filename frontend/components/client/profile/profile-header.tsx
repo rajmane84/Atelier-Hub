@@ -347,6 +347,7 @@ export default function ProfileHeader({ user, profile }: ProfileHeaderProps) {
           isOpen={isPhoneModalOpen}
           onClose={() => setIsPhoneModalOpen(false)}
           initialPhoneNumber={profile.phoneNumber}
+          isPhoneVerified={profile.phoneVerified}
         />
 
         <div className="mt-5 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">

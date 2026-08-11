@@ -8,7 +8,6 @@ import { LoadingState } from '@/components/loading-state';
 import { ErrorState } from '@/components/error-state';
 import { useListing, useUpdateListing } from '@/hooks/listing';
 import {
-  Discipline,
   LocationType,
   RateType,
   EmploymentType,
@@ -43,7 +42,6 @@ export default function EditListingPage() {
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [discipline, setDiscipline] = useState<Discipline | ''>('');
   const [employmentType, setEmploymentType] = useState<EmploymentType | ''>('');
   const [locationType, setLocationType] = useState<LocationType>(
     LocationType.REMOTE
@@ -68,7 +66,6 @@ export default function EditListingPage() {
     if (listing) {
       setTitle(listing.title || '');
       setDescription(listing.description || '');
-      setDiscipline(listing.discipline || '');
       setEmploymentType(listing.employmentType || '');
       setLocationType(listing.locationType || LocationType.REMOTE);
       setLocation(listing.location || '');
@@ -114,16 +111,12 @@ export default function EditListingPage() {
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 0:
-        // Basic Details: title (min 5 chars) and description (min 20 chars) are mandatory
         return title.length >= 5 && description.length >= 20;
       case 1:
-        // Location & Schedule: optional fields
         return true;
       case 2:
-        // Budget: optional fields
         return true;
       case 3:
-        // Skills & Status: optional fields
         return true;
       default:
         return true;
@@ -131,11 +124,23 @@ export default function EditListingPage() {
   };
 
   const isFormValid = (): boolean => {
-    // Check mandatory fields
     const mandatoryFieldsValid = title.length >= 5 && description.length >= 20;
 
-    // Validate dates if provided
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     let datesValid = true;
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (start < today) datesValid = false;
+    }
+
+    if (deadline) {
+      const dline = new Date(deadline);
+      dline.setHours(0, 0, 0, 0);
+      if (dline < today) datesValid = false;
+    }
 
     if (startDate && deadline) {
       const start = new Date(startDate);
@@ -145,7 +150,6 @@ export default function EditListingPage() {
       if (dline > start) datesValid = false;
     }
 
-    // Validate budget if provided
     let budgetValid = true;
     const min = budgetMin ? parseInt(budgetMin, 10) : undefined;
     const max = budgetMax ? parseInt(budgetMax, 10) : undefined;
@@ -159,7 +163,9 @@ export default function EditListingPage() {
   const handleNext = (e?: React.MouseEvent<HTMLButtonElement>) => {
     e?.preventDefault();
 
-    // Validation for each step
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     if (currentStep === 0) {
       if (title.length < 5) {
         toast.error('Title must be at least 5 characters long');
@@ -172,6 +178,24 @@ export default function EditListingPage() {
     }
 
     if (currentStep === 1) {
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (start < today) {
+          toast.error('Start date must be today or a future date');
+          return;
+        }
+      }
+
+      if (deadline) {
+        const dline = new Date(deadline);
+        dline.setHours(0, 0, 0, 0);
+        if (dline < today) {
+          toast.error('Application deadline must be today or a future date');
+          return;
+        }
+      }
+
       if (startDate && deadline) {
         const start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
@@ -184,12 +208,22 @@ export default function EditListingPage() {
       }
     }
 
+    if (currentStep === 2) {
+      const min = budgetMin ? parseInt(budgetMin, 10) : undefined;
+      const max = budgetMax ? parseInt(budgetMax, 10) : undefined;
+      if (min !== undefined && max !== undefined && max < min) {
+        toast.error('Maximum budget must be greater than minimum budget');
+        return;
+      }
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrev = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault();
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -248,7 +282,6 @@ export default function EditListingPage() {
       status,
       locationType,
       location: location || undefined,
-      discipline: discipline ? (discipline as Discipline) : undefined,
       employmentType: employmentType
         ? (employmentType as EmploymentType)
         : undefined,
@@ -272,8 +305,6 @@ export default function EditListingPage() {
             onTitleChange={setTitle}
             description={description}
             onDescriptionChange={setDescription}
-            discipline={discipline}
-            onDisciplineChange={setDiscipline}
             employmentType={employmentType}
             onEmploymentTypeChange={setEmploymentType}
           />
@@ -395,7 +426,7 @@ export default function EditListingPage() {
             <ListingStepNavigation
               currentStep={currentStep}
               totalSteps={steps.length}
-              onPrevious={handlePrevious}
+              onPrevious={handlePrev}
               onNext={handleNext}
               isSubmitting={updateListingMutation.isPending}
               isNextDisabled={!isStepValid(currentStep)}

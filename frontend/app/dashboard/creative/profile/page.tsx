@@ -67,7 +67,6 @@ export default function CreativeProfilePage() {
         <div className="space-y-12 md:space-y-16">
           <ProfileSkills skills={skills} />
           <ProfileRateDetails
-            disciplines={creativeProfile.disciplines}
             rateType={creativeProfile.rateType}
             rateAmount={creativeProfile.rateAmount}
             experienceYears={creativeProfile.experienceYears}

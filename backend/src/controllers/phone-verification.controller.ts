@@ -11,6 +11,16 @@ export const handleSendPhoneOtp = asyncHandler(
     const userId = req.user!.id;
     const { phoneNumber } = req.body;
 
+    const clientProfile = await prisma.clientProfile.findUnique({
+      where: { userId },
+    });
+
+    if (clientProfile?.phoneVerified) {
+      throw new BadRequestError(
+        'Your phone number is already verified and cannot be changed.'
+      );
+    }
+
     // 1. Cooldown check: prevent requesting a code within 30 seconds
     const existing = await prisma.phoneVerification.findFirst({
       where: {
@@ -77,6 +87,16 @@ export const handleVerifyPhoneOtp = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user!.id;
     const { phoneNumber, otpCode } = req.body;
+
+    const clientProfile = await prisma.clientProfile.findUnique({
+      where: { userId },
+    });
+
+    if (clientProfile?.phoneVerified) {
+      throw new BadRequestError(
+        'Your phone number is already verified and cannot be changed.'
+      );
+    }
 
     const record = await prisma.phoneVerification.findFirst({
       where: {

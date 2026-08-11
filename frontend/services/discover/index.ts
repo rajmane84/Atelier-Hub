@@ -1,10 +1,7 @@
 import axios from '@/lib/axios';
 import { ApiError, type SuccessResponse } from '@/types/api';
-import { Discipline, DISCIPLINE_LABELS, RateType } from '@/types';
-import type {
-  FreelancerDiscoverItem,
-  Discipline as DisciplineLabel,
-} from '@/components/discover/mock-data';
+import { RateType } from '@/types';
+import type { FreelancerDiscoverItem } from '@/components/discover/mock-data';
 
 // Shape returned by GET /discover/freelancers and /discover/freelancers/:username
 // — see backend/src/controllers/discover.controller.ts `toFreelancerDiscoverItem`.
@@ -18,7 +15,6 @@ interface RawFreelancer {
   avatarUrl: string | null;
   coverImage: string | null;
   location: string | null;
-  disciplines: Discipline[];
   skills: string[];
   rateType: RateType | null;
   rateAmount: number | null;
@@ -56,9 +52,6 @@ function transformFreelancer(raw: RawFreelancer): FreelancerDiscoverItem {
     avatarUrl: raw.avatarUrl ?? '',
     coverImage: raw.coverImage ?? '',
     location: raw.location ?? '',
-    disciplines: raw.disciplines.map(
-      (d) => DISCIPLINE_LABELS[d]
-    ) as DisciplineLabel[],
     skills: raw.skills,
     rateType: raw.rateType,
     rateAmount: raw.rateAmount,

@@ -2,8 +2,8 @@
 
 import { motion } from 'motion/react';
 import { Filter, X } from 'lucide-react';
-import { LISTING_STATUS_LABELS, DISCIPLINE_LABELS } from '@/types';
-import { ListingStatus, Discipline } from '@/types';
+import { LISTING_STATUS_LABELS } from '@/types';
+import { ListingStatus } from '@/types';
 import {
   Select,
   SelectContent,
@@ -16,18 +16,14 @@ const ease = [0.76, 0, 0.24, 1] as const;
 
 interface ListingFiltersProps {
   statusFilter?: ListingStatus;
-  disciplineFilter?: Discipline;
   onStatusChange: (status: ListingStatus | undefined) => void;
-  onDisciplineChange: (discipline: Discipline | undefined) => void;
   onClearFilters: () => void;
   hasActiveFilters: boolean;
 }
 
 export function ListingFilters({
   statusFilter,
-  disciplineFilter,
   onStatusChange,
-  onDisciplineChange,
   onClearFilters,
   hasActiveFilters,
 }: ListingFiltersProps) {
@@ -62,28 +58,6 @@ export function ListingFilters({
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               {Object.entries(LISTING_STATUS_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Discipline Filter */}
-          <Select
-            value={disciplineFilter || 'all'}
-            onValueChange={(value) =>
-              onDisciplineChange(
-                value === 'all' ? undefined : (value as Discipline)
-              )
-            }
-          >
-            <SelectTrigger className="w-[140px] h-8 font-mono text-[11px] uppercase tracking-wider">
-              <SelectValue placeholder="Discipline" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Disciplines</SelectItem>
-              {Object.entries(DISCIPLINE_LABELS).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}
                 </SelectItem>

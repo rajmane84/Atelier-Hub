@@ -96,14 +96,14 @@ export function CultDiscoverCard({ cult, href }: CultDiscoverCardProps) {
               </div>
             </div>
 
-            {/* Discipline tags */}
+            {/* Skill tags */}
             <div className="flex flex-wrap gap-1 pt-1 min-w-0 overflow-hidden">
-              {cult.disciplines.slice(0, 2).map((d) => (
+              {cult.tags.slice(0, 2).map((t) => (
                 <span
-                  key={d}
+                  key={t}
                   className="font-mono text-[9px] uppercase tracking-wider border border-border/80 bg-background px-2 py-0.5 text-foreground font-medium"
                 >
-                  {d}
+                  {t}
                 </span>
               ))}
             </div>

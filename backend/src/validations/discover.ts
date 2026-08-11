@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { Discipline, AvailabilityStatus } from '@prisma/client';
+import { AvailabilityStatus } from '@prisma/client';
 
 export const discoverFreelancersQuerySchema = z.object({
   search: z.string().optional(),
-  discipline: z.enum(Discipline).optional(),
+  skill: z.string().optional(),
   availability: z.enum(AvailabilityStatus).optional(),
   sortBy: z
     .enum(['FEATURED', 'RATING', 'PRICE_LOW', 'PRICE_HIGH', 'PROJECTS'])

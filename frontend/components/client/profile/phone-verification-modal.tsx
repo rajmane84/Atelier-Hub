@@ -25,6 +25,7 @@ interface PhoneVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialPhoneNumber?: string | null;
+  isPhoneVerified?: boolean;
   onSuccess?: () => void;
 }
 
@@ -32,6 +33,7 @@ export function PhoneVerificationModal({
   isOpen,
   onClose,
   initialPhoneNumber,
+  isPhoneVerified,
   onSuccess,
 }: PhoneVerificationModalProps) {
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
@@ -60,6 +62,7 @@ export function PhoneVerificationModal({
   }, [resendTimer]);
 
   const handleSendOtp = () => {
+    if (isPhoneVerified) return;
     const cleanPhone = phone.trim();
     if (!cleanPhone) {
       return;
@@ -77,6 +80,7 @@ export function PhoneVerificationModal({
   };
 
   const handleVerifyOtp = () => {
+    if (isPhoneVerified) return;
     const cleanOtp = otpCode.trim();
     if (cleanOtp.length !== 6) {
       return;
@@ -97,7 +101,7 @@ export function PhoneVerificationModal({
   };
 
   const handleResendCode = () => {
-    if (resendTimer > 0) return;
+    if (isPhoneVerified || resendTimer > 0) return;
     sendOtpMutation.mutate(
       { phoneNumber: phone.trim() },
       {
@@ -116,18 +120,47 @@ export function PhoneVerificationModal({
             <ShieldCheck className="size-5 mx-auto selection:text-background selection:bg-primary" />
           </div>
           <DialogTitle className="font-editorial text-xl font-normal text-foreground">
-            {step === 'phone'
-              ? 'Verify Mobile Number'
-              : 'Enter Verification Code'}
+            {isPhoneVerified
+              ? 'Mobile Number Verified'
+              : step === 'phone'
+                ? 'Verify Mobile Number'
+                : 'Enter Verification Code'}
           </DialogTitle>
           <DialogDescription className="text-xs font-body text-muted-foreground">
-            {step === 'phone'
-              ? 'Select your country code and enter your mobile number to receive a 6-digit verification code.'
-              : `Enter the 6-digit code sent via SMS to ${phone}.`}
+            {isPhoneVerified
+              ? 'Your mobile number is already verified and cannot be changed.'
+              : step === 'phone'
+                ? 'Select your country code and enter your mobile number to receive a 6-digit verification code.'
+                : `Enter the 6-digit code sent via SMS to ${phone}.`}
           </DialogDescription>
         </DialogHeader>
 
-        {step === 'phone' ? (
+        {isPhoneVerified ? (
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label
+                htmlFor="verification-phone"
+                className="font-mono text-[11px] uppercase tracking-widest text-foreground block"
+              >
+                Phone Number
+              </Label>
+              <PhoneInput id="verification-phone" value={phone} disabled />
+            </div>
+            <p className="text-xs font-body text-emerald-600 bg-emerald-50 border border-emerald-200 p-2.5">
+              Verified phone numbers cannot be updated or changed.
+            </p>
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="w-full h-10 rounded-none"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        ) : step === 'phone' ? (
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label

@@ -3,7 +3,6 @@ import {
   ListingStatus,
   LocationType,
   RateType,
-  Discipline,
   EmploymentType,
   Currency,
 } from '@prisma/client';
@@ -49,11 +48,6 @@ export const createListingObject = z.object({
   currency: z
     .enum(Currency, {
       error: () => 'Invalid currency',
-    })
-    .optional(),
-  discipline: z
-    .enum(Discipline, {
-      error: () => 'Invalid discipline',
     })
     .optional(),
   employmentType: z
@@ -216,11 +210,6 @@ export const listingQuerySchema = z.object({
   status: z
     .enum(ListingStatus, {
       error: () => 'Invalid listing status',
-    })
-    .optional(),
-  discipline: z
-    .enum(Discipline, {
-      error: () => 'Invalid discipline',
     })
     .optional(),
   page: z

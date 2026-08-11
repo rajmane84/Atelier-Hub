@@ -52,7 +52,7 @@ export function DiscoverFilters({
 }: DiscoverFiltersProps) {
   const hasActiveFilters =
     searchQuery.trim() !== '' ||
-    selectedCategory !== 'All Disciplines' ||
+    selectedCategory !== 'All Skills' ||
     availabilityFilter !== 'ALL';
 
   return (
@@ -116,7 +116,7 @@ export function DiscoverFilters({
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search by name, skill, discipline, location..."
+              placeholder="Search by name, skill, location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-9 h-11 border border-border bg-card text-foreground font-mono text-xs uppercase tracking-wider placeholder:text-muted-foreground placeholder:normal-case focus-visible:ring-primary focus-visible:border-primary rounded-none"
@@ -239,15 +239,15 @@ export function DiscoverFilters({
                 </Badge>
               )}
 
-              {selectedCategory !== 'All Disciplines' && (
+              {selectedCategory !== 'All Skills' && (
                 <Badge
                   variant="outline"
                   className="font-mono text-[10px] uppercase tracking-wider gap-1 border-primary text-primary selection:text-background selection:bg-primary"
                 >
-                  <span>Category: {selectedCategory}</span>
+                  <span>Skill: {selectedCategory}</span>
                   <X
                     className="size-3 cursor-pointer"
-                    onClick={() => setSelectedCategory('All Disciplines')}
+                    onClick={() => setSelectedCategory('All Skills')}
                   />
                 </Badge>
               )}

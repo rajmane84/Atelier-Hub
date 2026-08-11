@@ -148,7 +148,7 @@ export function FreelancerDetailView({
               </p>
             </div>
 
-            {/* Skills & Disciplines Tags */}
+            {/* Skills Tags */}
             <div className="space-y-3 pt-6 border-t border-border">
               <div className="space-y-1 border-b border-border pb-3">
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -156,7 +156,7 @@ export function FreelancerDetailView({
                   <span>Expertise</span>
                 </div>
                 <h2 className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  Core Skills & Disciplines
+                  Core Skills
                 </h2>
               </div>
 

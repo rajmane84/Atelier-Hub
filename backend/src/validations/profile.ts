@@ -4,7 +4,6 @@ import {
   SkillLevel,
   Degree,
   EmploymentType,
-  Discipline,
   RateType,
 } from '@prisma/client';
 
@@ -20,7 +19,6 @@ export const updateProfileSchema = z
             : 'Invalid availability status. Must be one of: AVAILABLE, BUSY, NOT_AVAILABLE',
       })
       .optional(),
-    disciplines: z.array(z.enum(Discipline)).max(7).optional(),
     rateType: z.enum(RateType).nullable().optional(),
     rateAmount: z
       .number('Rate amount must be a number')

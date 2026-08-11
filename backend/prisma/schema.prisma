@@ -45,18 +45,6 @@ enum AvailabilityStatus {
   NOT_AVAILABLE
 }
 
-// Fixed vocabulary so the discover-page filter tabs never drift out of sync
-// with what creatives can actually select on their profile.
-enum Discipline {
-  FILM_VIDEO
-  VFX_3D
-  FASHION_STYLING
-  SOUND_AUDIO
-  DESIGN_BRAND
-  PHOTOGRAPHY
-  MOTION_GRAPHICS
-}
-
 enum RateType {
   HOURLY
   DAILY
@@ -235,10 +223,6 @@ model CreativeProfile {
   onboardingCompleted Boolean            @default(false)
   coverImage          String?
 
-  // Broad category tags used for discover-page filtering — distinct from the
-  // granular CreativeSkill relation below.
-  disciplines Discipline[]
-
   // rateAmount is null when rateType is NEGOTIABLE (no fixed number to show).
   rateType   RateType?
   rateAmount Int?
@@ -346,7 +330,6 @@ model Listing {
   currency     Currency @default(USD)
 
   // Job details
-  discipline   Discipline? // Primary discipline for filtering
   employmentType EmploymentType?
 
   // Skills required - array of skill names for flexibility
@@ -366,7 +349,6 @@ model Listing {
 
   @@index([clientProfileId])
   @@index([status])
-  @@index([discipline])
 }
 
 model CreativeSkill {

@@ -76,7 +76,7 @@ export function DiscoverSpotlight({ freelancers }: DiscoverSpotlightProps) {
                 </span>
               </div>
             }
-            tags={featuredCult.disciplines.slice(0, 3)}
+            tags={featuredCult.tags.slice(0, 3)}
             footerLabel="Starting at"
             price={featuredCult.startingPrice}
             rating={featuredCult.rating}

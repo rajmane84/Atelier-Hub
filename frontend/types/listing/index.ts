@@ -2,7 +2,6 @@ import {
   ListingStatus,
   LocationType,
   RateType,
-  Discipline,
   EmploymentType,
   Currency,
 } from '../index';
@@ -18,7 +17,6 @@ export interface Listing {
   budgetMax?: number | null;
   rateType?: RateType | null;
   currency?: Currency | null;
-  discipline?: Discipline | null;
   employmentType?: EmploymentType | null;
   skills: string[];
   deadline?: string | null;
@@ -39,7 +37,6 @@ export interface CreateListingData {
   budgetMax?: number;
   rateType?: RateType;
   currency?: Currency;
-  discipline?: Discipline;
   employmentType?: EmploymentType;
   skills?: string[];
   deadline?: string;
@@ -53,7 +50,6 @@ export interface UpdateListingData extends Partial<CreateListingData> {
 
 export interface ListingQueryParams {
   status?: ListingStatus;
-  discipline?: Discipline;
   page?: number;
   limit?: number;
 }

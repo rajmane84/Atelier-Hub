@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { useCreateListing } from '@/hooks/listing';
 import { authClient } from '@/lib/auth-client';
 import {
-  Discipline,
   LocationType,
   RateType,
   EmploymentType,
@@ -41,7 +40,6 @@ export default function NewListingPage() {
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [discipline, setDiscipline] = useState<Discipline | ''>('');
   const [employmentType, setEmploymentType] = useState<EmploymentType | ''>('');
   const [locationType, setLocationType] = useState<LocationType>(
     LocationType.REMOTE
@@ -168,7 +166,7 @@ export default function NewListingPage() {
         const dline = new Date(deadline);
         dline.setHours(0, 0, 0, 0);
         if (dline < today) {
-          toast.error('Application deadline must be today or a future date');
+          toast.error('Deadline must be today or a future date');
           return;
         }
       }
@@ -179,9 +177,18 @@ export default function NewListingPage() {
         const dline = new Date(deadline);
         dline.setHours(0, 0, 0, 0);
         if (dline > start) {
-          toast.error('Application deadline cannot be after the start date');
+          toast.error('Deadline cannot be before start date');
           return;
         }
+      }
+    }
+
+    if (currentStep === 2) {
+      const min = budgetMin ? parseInt(budgetMin, 10) : undefined;
+      const max = budgetMax ? parseInt(budgetMax, 10) : undefined;
+      if (min !== undefined && max !== undefined && max < min) {
+        toast.error('Maximum budget must be greater than minimum budget');
+        return;
       }
     }
 
@@ -220,7 +227,6 @@ export default function NewListingPage() {
       status,
       locationType,
       location: location || undefined,
-      discipline: discipline ? (discipline as Discipline) : undefined,
       employmentType: employmentType
         ? (employmentType as EmploymentType)
         : undefined,
@@ -244,8 +250,6 @@ export default function NewListingPage() {
             onTitleChange={setTitle}
             description={description}
             onDescriptionChange={setDescription}
-            discipline={discipline}
-            onDisciplineChange={setDiscipline}
             employmentType={employmentType}
             onEmploymentTypeChange={setEmploymentType}
           />

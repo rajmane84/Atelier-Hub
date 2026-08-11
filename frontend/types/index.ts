@@ -58,29 +58,6 @@ export enum AvailabilityStatus {
   NOT_AVAILABLE = 'NOT_AVAILABLE',
 }
 
-// Mirrors backend Discipline enum (backend/prisma/schema.prisma).
-export enum Discipline {
-  FILM_VIDEO = 'FILM_VIDEO',
-  VFX_3D = 'VFX_3D',
-  FASHION_STYLING = 'FASHION_STYLING',
-  SOUND_AUDIO = 'SOUND_AUDIO',
-  DESIGN_BRAND = 'DESIGN_BRAND',
-  PHOTOGRAPHY = 'PHOTOGRAPHY',
-  MOTION_GRAPHICS = 'MOTION_GRAPHICS',
-}
-
-// Human-readable labels — used both for display and as the values the
-// discover-page filter tabs / mock data operate on.
-export const DISCIPLINE_LABELS: Record<Discipline, string> = {
-  [Discipline.FILM_VIDEO]: 'Film & Video',
-  [Discipline.VFX_3D]: '3D & VFX',
-  [Discipline.FASHION_STYLING]: 'Fashion & Styling',
-  [Discipline.SOUND_AUDIO]: 'Sound & Audio',
-  [Discipline.DESIGN_BRAND]: 'Design & Brand',
-  [Discipline.PHOTOGRAPHY]: 'Photography',
-  [Discipline.MOTION_GRAPHICS]: 'Motion Graphics',
-};
-
 // Mirrors backend RateType enum.
 export enum RateType {
   HOURLY = 'HOURLY',

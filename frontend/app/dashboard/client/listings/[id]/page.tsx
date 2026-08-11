@@ -17,8 +17,6 @@ import {
   LOCATION_TYPE_LABELS,
   RATE_TYPE_LABELS,
   EMPLOYMENT_TYPE_LABELS,
-  DISCIPLINE_LABELS,
-  Discipline,
 } from '@/types';
 import { toast } from 'sonner';
 import {
@@ -139,12 +137,6 @@ export default function ListingDetailPage() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 {getStatusBadge(listing.status)}
-                {listing.discipline && (
-                  <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground bg-muted/60 px-2.5 py-0.5 border border-border/60">
-                    {DISCIPLINE_LABELS[listing.discipline as Discipline] ||
-                      listing.discipline}
-                  </span>
-                )}
               </div>
               <h1 className="font-editorial text-3xl sm:text-4xl font-bold tracking-tight text-foreground selection:text-background selection:bg-primary">
                 {listing.title}

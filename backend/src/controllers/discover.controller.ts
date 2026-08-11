@@ -41,7 +41,6 @@ function toFreelancerDiscoverItem(profile: DiscoverProfile) {
     avatarUrl: profile.user.image,
     coverImage: profile.coverImage,
     location: profile.location,
-    disciplines: profile.disciplines,
     skills: profile.skills.map((s) => s.name),
     rateType: profile.rateType,
     rateAmount: profile.rateAmount,
@@ -85,9 +84,7 @@ const discoverProfileInclude = {
 export const listFreelancersHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const search = req.query.search ? String(req.query.search) : undefined;
-    const discipline = req.query.discipline
-      ? String(req.query.discipline)
-      : undefined;
+    const skill = req.query.skill ? String(req.query.skill) : undefined;
     const availability = req.query.availability
       ? String(req.query.availability)
       : undefined;
@@ -119,8 +116,12 @@ export const listFreelancersHandler = asyncHandler(
           },
         ],
       }),
-      ...(discipline && {
-        disciplines: { has: discipline as never },
+      ...(skill && {
+        skills: {
+          some: {
+            name: { contains: skill, mode: 'insensitive' as const },
+          },
+        },
       }),
       ...(availability && { availability: availability as never }),
     };

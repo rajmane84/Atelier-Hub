@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/cn';
-import { Discipline, DISCIPLINE_LABELS, EmploymentType } from '@/types';
+import { EmploymentType } from '@/types';
 import {
   Select,
   SelectContent,
@@ -18,8 +18,6 @@ interface BasicDetailsStepProps {
   onTitleChange: (value: string) => void;
   description: string;
   onDescriptionChange: (value: string) => void;
-  discipline: Discipline | '';
-  onDisciplineChange: (value: Discipline | '') => void;
   employmentType: EmploymentType | '';
   onEmploymentTypeChange: (value: EmploymentType | '') => void;
 }
@@ -29,8 +27,6 @@ export default function BasicDetailsStep({
   onTitleChange,
   description,
   onDescriptionChange,
-  discipline,
-  onDisciplineChange,
   employmentType,
   onEmploymentTypeChange,
 }: BasicDetailsStepProps) {
@@ -111,62 +107,28 @@ export default function BasicDetailsStep({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <Label
-            htmlFor="discipline"
-            className="font-mono text-[11px] uppercase tracking-widest text-foreground block mb-2"
-          >
-            Discipline
-          </Label>
-          <Select<Discipline | ''>
-            value={discipline}
-            onValueChange={(value) =>
-              onDisciplineChange((value as Discipline) || '')
-            }
-          >
-            <SelectTrigger id="discipline" className="w-full">
-              <SelectValue placeholder="Select discipline..." />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(DISCIPLINE_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-4">
-          <Label
-            htmlFor="employmentType"
-            className="font-mono text-[11px] uppercase tracking-widest text-foreground block mb-2"
-          >
-            Employment Type
-          </Label>
-          <Select<EmploymentType | ''>
-            value={employmentType}
-            onValueChange={(value) =>
-              onEmploymentTypeChange((value as EmploymentType) || '')
-            }
-          >
-            <SelectTrigger id="employmentType" className="w-full">
-              <SelectValue placeholder="Select type..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={EmploymentType.FREELANCE}>
-                Freelance
-              </SelectItem>
-              <SelectItem value={EmploymentType.FULL_TIME}>
-                Full Time
-              </SelectItem>
-              <SelectItem value={EmploymentType.PART_TIME}>
-                Part Time
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-4">
+        <Label
+          htmlFor="employmentType"
+          className="font-mono text-[11px] uppercase tracking-widest text-foreground block mb-2"
+        >
+          Employment Type
+        </Label>
+        <Select<EmploymentType | ''>
+          value={employmentType}
+          onValueChange={(value) =>
+            onEmploymentTypeChange((value as EmploymentType) || '')
+          }
+        >
+          <SelectTrigger id="employmentType" className="w-full">
+            <SelectValue placeholder="Select type..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={EmploymentType.FREELANCE}>Freelance</SelectItem>
+            <SelectItem value={EmploymentType.FULL_TIME}>Full Time</SelectItem>
+            <SelectItem value={EmploymentType.PART_TIME}>Part Time</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

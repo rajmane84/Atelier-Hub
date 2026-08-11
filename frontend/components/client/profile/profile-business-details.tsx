@@ -95,7 +95,9 @@ export default function ProfileBusinessDetails({
       companySize: localCompanySize,
       foundedYear: localFoundedYear || undefined,
       website: localWebsite || undefined,
-      phoneNumber: localPhoneNumber || undefined,
+      phoneNumber: phoneVerified
+        ? phoneNumber || undefined
+        : localPhoneNumber || undefined,
     });
 
     if (!validationResult.success) {
@@ -115,7 +117,7 @@ export default function ProfileBusinessDetails({
         companySize: isCompany ? localCompanySize : undefined,
         foundedYear: isCompany ? localFoundedYear || undefined : undefined,
         website: localWebsite || undefined,
-        phoneNumber: localPhoneNumber || undefined,
+        phoneNumber: phoneVerified ? undefined : localPhoneNumber || undefined,
       },
       {
         onSuccess: () => {
@@ -323,17 +325,30 @@ export default function ProfileBusinessDetails({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="phoneNumber"
-                  className="font-mono text-[11px] uppercase tracking-widest text-foreground block"
-                >
-                  Phone Number
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label
+                    htmlFor="phoneNumber"
+                    className="font-mono text-[11px] uppercase tracking-widest text-foreground block"
+                  >
+                    Phone Number
+                  </Label>
+                  {phoneVerified && (
+                    <span className="font-mono text-[10px] uppercase text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 font-medium">
+                      Verified (Cannot be changed)
+                    </span>
+                  )}
+                </div>
                 <PhoneInput
                   id="phoneNumber"
                   value={localPhoneNumber}
                   onChange={(val) => setLocalPhoneNumber(val)}
+                  disabled={phoneVerified}
                 />
+                {phoneVerified && (
+                  <p className="text-[11px] font-mono text-muted-foreground">
+                    Verified phone number cannot be changed.
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-3 pt-2">
@@ -387,7 +402,7 @@ export default function ProfileBusinessDetails({
                           <button
                             type="button"
                             onClick={() => setIsPhoneModalOpen(true)}
-                            className="font-mono text-[10px] uppercase text-primary bg-primary/10 border border-primary/30 px-1.5 py-0.5 hover:bg-primary/20 transition-colors"
+                            className="font-mono text-[10px] uppercase text-primary bg-primary/10 border border-primary/30 px-1.5 py-0.5 hover:bg-primary/20 transition-colors selection:text-background selection:bg-primary"
                           >
                             Verify
                           </button>
@@ -410,6 +425,7 @@ export default function ProfileBusinessDetails({
         isOpen={isPhoneModalOpen}
         onClose={() => setIsPhoneModalOpen(false)}
         initialPhoneNumber={phoneNumber}
+        isPhoneVerified={phoneVerified}
       />
     </div>
   );

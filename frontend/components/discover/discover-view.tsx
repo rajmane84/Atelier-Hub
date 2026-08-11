@@ -17,13 +17,12 @@ import { useFreelancers } from '@/hooks/discover';
 export function DiscoverView() {
   const [activeTab, setActiveTab] = useState<TabType>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All Disciplines');
+  const [selectedCategory, setSelectedCategory] = useState('All Skills');
   const [availabilityFilter, setAvailabilityFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState<SortOption>('FEATURED');
 
   // Cults are still backed by mock data — the Cult schema doesn't yet carry
-  // most of what CultDiscoverItem needs (disciplines, pricing, rating,
-  // equipment, etc). Freelancers are wired to the real API below.
+  // pricing, rating, equipment, etc. Freelancers are wired to the real API below.
   const {
     data: freelancers,
     isLoading: freelancersLoading,
@@ -33,7 +32,7 @@ export function DiscoverView() {
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory('All Disciplines');
+    setSelectedCategory('All Skills');
     setAvailabilityFilter('ALL');
     setActiveTab('ALL');
     setSortBy('FEATURED');
@@ -48,7 +47,6 @@ export function DiscoverView() {
         cult.name.toLowerCase().includes(query) ||
         cult.tagline.toLowerCase().includes(query) ||
         cult.location.toLowerCase().includes(query) ||
-        cult.disciplines.some((d) => d.toLowerCase().includes(query)) ||
         cult.tags.some((t) => t.toLowerCase().includes(query)) ||
         cult.members.some(
           (m) =>
@@ -57,8 +55,10 @@ export function DiscoverView() {
         );
 
       const matchesCategory =
-        selectedCategory === 'All Disciplines' ||
-        (cult.disciplines as string[]).includes(selectedCategory);
+        selectedCategory === 'All Skills' ||
+        cult.tags.some((t) =>
+          t.toLowerCase().includes(selectedCategory.toLowerCase())
+        );
 
       const matchesAvailability =
         availabilityFilter === 'ALL' ||
@@ -78,12 +78,13 @@ export function DiscoverView() {
         free.username.toLowerCase().includes(query) ||
         free.headline.toLowerCase().includes(query) ||
         free.location.toLowerCase().includes(query) ||
-        free.disciplines.some((d) => d.toLowerCase().includes(query)) ||
         free.skills.some((s) => s.toLowerCase().includes(query));
 
       const matchesCategory =
-        selectedCategory === 'All Disciplines' ||
-        (free.disciplines as string[]).includes(selectedCategory);
+        selectedCategory === 'All Skills' ||
+        free.skills.some((s) =>
+          s.toLowerCase().includes(selectedCategory.toLowerCase())
+        );
 
       const matchesAvailability =
         availabilityFilter === 'ALL' ||

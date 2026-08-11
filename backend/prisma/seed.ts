@@ -6,7 +6,6 @@ import {
   CompanySize,
   CultMemberRole,
   CultMembershipStatus,
-  Discipline,
   Industry,
   RateType,
 } from '@prisma/client';
@@ -24,7 +23,6 @@ interface FreelancerSeed {
   location: string;
   avatarUrl: string;
   coverImage: string;
-  disciplines: Discipline[];
   skills: string[];
   tools: string[];
   rateType: RateType;
@@ -48,7 +46,6 @@ const FREELANCERS: FreelancerSeed[] = [
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=srgb&fm=jpg&q=85&w=300',
     coverImage:
       'https://images.unsplash.com/photo-1611784728558-6c7d9b409cdf?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-    disciplines: [Discipline.FILM_VIDEO, Discipline.PHOTOGRAPHY],
     skills: [
       'ARRI Alexa',
       'Anamorphic Lenses',
@@ -93,7 +90,6 @@ const FREELANCERS: FreelancerSeed[] = [
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=srgb&fm=jpg&q=85&w=300',
     coverImage:
       'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-    disciplines: [Discipline.VFX_3D, Discipline.MOTION_GRAPHICS],
     skills: [
       'Unreal Engine 5',
       'Blender 3D',
@@ -127,7 +123,6 @@ const FREELANCERS: FreelancerSeed[] = [
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=srgb&fm=jpg&q=85&w=300',
     coverImage:
       'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-    disciplines: [Discipline.SOUND_AUDIO],
     skills: ['Modular Synths', 'Pro Tools HD', 'Game Audio (Wwise)'],
     tools: [
       'Eurorack Modular Synth',
@@ -160,7 +155,6 @@ const FREELANCERS: FreelancerSeed[] = [
       'https://images.unsplash.com/photo-1517841905240-472988babdf9?crop=entropy&cs=srgb&fm=jpg&q=85&w=300',
     coverImage:
       'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-    disciplines: [Discipline.FASHION_STYLING, Discipline.DESIGN_BRAND],
     skills: [
       'Costume Design',
       'Creative Direction',
@@ -194,7 +188,6 @@ const FREELANCERS: FreelancerSeed[] = [
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&q=85&w=300',
     coverImage:
       'https://images.unsplash.com/photo-1508614589041-895b88991e3e?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-    disciplines: [Discipline.FILM_VIDEO, Discipline.PHOTOGRAPHY],
     skills: ['Custom FPV Rigs', 'RED Komodo Aerial', 'High-Speed Tracking'],
     tools: ['Custom 7" FPV Drone', 'RED Komodo 6K', 'DJI Inspire 3'],
     // Deliberately NEGOTIABLE + no reviews below — exercises the "New" /
@@ -375,7 +368,6 @@ async function seedFreelancers() {
         bio: f.bio,
         location: f.location,
         coverImage: f.coverImage,
-        disciplines: f.disciplines,
         rateType: f.rateType,
         rateAmount: f.rateAmount,
         experienceYears: f.experienceYears,
@@ -392,7 +384,6 @@ async function seedFreelancers() {
         bio: f.bio,
         location: f.location,
         coverImage: f.coverImage,
-        disciplines: f.disciplines,
         rateType: f.rateType,
         rateAmount: f.rateAmount,
         experienceYears: f.experienceYears,

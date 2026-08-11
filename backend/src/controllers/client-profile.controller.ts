@@ -129,6 +129,16 @@ export const handleUpdateClientProfile = asyncHandler(
       throw new NotFoundError('Client profile not found');
     }
 
+    if (
+      clientProfile.phoneVerified &&
+      phoneNumber !== undefined &&
+      phoneNumber !== clientProfile.phoneNumber
+    ) {
+      throw new BadRequestError(
+        'Phone number cannot be changed once verified.'
+      );
+    }
+
     const updatedProfile = await prisma.clientProfile.update({
       where: { id: clientProfile.id },
       data: {
@@ -139,7 +149,11 @@ export const handleUpdateClientProfile = asyncHandler(
         foundedYear: foundedYear !== undefined ? foundedYear : undefined,
         bio: bio !== undefined ? bio : undefined,
         website: website !== undefined ? website : undefined,
-        phoneNumber: phoneNumber !== undefined ? phoneNumber : undefined,
+        phoneNumber: clientProfile.phoneVerified
+          ? undefined
+          : phoneNumber !== undefined
+            ? phoneNumber
+            : undefined,
         location: location !== undefined ? location : undefined,
       },
     });

@@ -269,7 +269,6 @@ export const getSavedItems = async (
             availability: cp.availability || 'AVAILABLE',
             rateType: cp.rateType || null,
             rateAmount: cp.rateAmount || null,
-            disciplines: cp.disciplines || [],
             skills: (cp.skills || []).map((s) => s.name),
             rating,
             reviewCount,
@@ -337,7 +336,6 @@ export const getSavedItems = async (
             rating: null,
             reviewCount: 0,
             location: null,
-            disciplines: [],
             members,
           },
         };
@@ -361,8 +359,7 @@ export const getSavedItems = async (
           (item.username && item.username.toLowerCase().includes(search)) ||
           (item.headline && item.headline.toLowerCase().includes(search)) ||
           (item.location && item.location.toLowerCase().includes(search)) ||
-          item.skills.some((s) => s.toLowerCase().includes(search)) ||
-          item.disciplines.some((d) => d.toLowerCase().includes(search))
+          item.skills.some((s) => s.toLowerCase().includes(search))
         );
       } else {
         const item = entry.item;

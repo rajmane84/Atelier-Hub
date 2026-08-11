@@ -3,12 +3,12 @@ import { prisma } from '../util/prisma';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { NotFoundError, BadRequestError } from '../util/errors/AppError';
 import { ApiResponse } from '../util/response/ApiResponse';
-import { ListingStatus, Discipline } from '@prisma/client';
+import { ListingStatus } from '@prisma/client';
 
 export const handleGetListings = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user!.id;
-    const { status, discipline, page = 1, limit = 10 } = req.query;
+    const { status, page = 1, limit = 10 } = req.query;
 
     const pageNumber = Number(Array.isArray(page) ? page[0] : page);
     const limitNumber = Number(Array.isArray(limit) ? limit[0] : limit);
@@ -17,7 +17,6 @@ export const handleGetListings = asyncHandler(
     const where: {
       clientProfile: { userId: string };
       status?: ListingStatus;
-      discipline?: Discipline;
     } = {
       clientProfile: {
         userId,
@@ -26,10 +25,6 @@ export const handleGetListings = asyncHandler(
 
     if (status && typeof status === 'string') {
       where.status = status as ListingStatus;
-    }
-
-    if (discipline && typeof discipline === 'string') {
-      where.discipline = discipline as Discipline;
     }
 
     // Get total count for pagination
