@@ -66,8 +66,12 @@ export const auth = betterAuth({
       const creativeProfile = await prisma.creativeProfile.findUnique({
         where: { userId: user.id },
       });
+      const typedUser = user as typeof user & {
+        role?: string;
+        username?: string;
+      };
       return {
-        user: { ...user, creativeProfile },
+        user: { ...typedUser, creativeProfile },
         session,
       };
     }),

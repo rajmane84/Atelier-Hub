@@ -19,7 +19,15 @@ export async function verifySession() {
       },
     });
 
-    return session.data;
+    if (!session.data) {
+      return null;
+    }
+
+    // better-auth's inferred session type is not shared across the
+    // frontend/backend package boundary (separate node_modules installs),
+    // so we type `user` against our own local `User` shape here instead of
+    // relying on cross-package type inference.
+    return { ...session.data, user: session.data.user as User };
   } catch (error) {
     // Next.js throws this internally during static-render attempts when a
     // dynamic API (cookies, headers, etc.) is accessed — it's not a real
@@ -43,7 +51,7 @@ export async function verifySession() {
  */
 export async function getCurrentUser(): Promise<User | null> {
   const session = await verifySession();
-  return (session?.user as User) || null;
+  return session?.user || null;
 }
 
 /**

@@ -12,6 +12,11 @@ export const authClient = createAuthClient({
   },
   plugins: [
     inferAdditionalFields<typeof auth>(),
-    customSessionClient<typeof auth>(),
+    // Intentionally called without <typeof auth> — that generic pulls in
+    // better-auth's Prisma-adapter-typed `Auth` shape, which isn't
+    // structurally compatible across the frontend/backend package boundary
+    // (each has its own node_modules install). We type the resulting
+    // session/user shape locally instead (see lib/session.ts).
+    customSessionClient(),
   ],
 });
