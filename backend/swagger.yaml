@@ -1,0 +1,2149 @@
+openapi: 3.0.3
+info:
+  title: Atelier Hub API
+  description: |
+    REST API for Atelier Hub — a marketplace connecting creative freelancers/cults with clients.
+    All endpoints documented below are mounted under `/api/v1`.
+
+    **Authentication** is handled separately by `better-auth` at `/api/auth/*` (sign-up,
+    sign-in with email/password and social providers, session retrieval, sign-out, etc.),
+    which is not covered by this spec — see the better-auth documentation for that endpoint
+    set. The session it issues (an httpOnly cookie by default) is what every protected route
+    below requires; the `bearerAuth` scheme is declared purely for tooling convenience.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: /api/v1
+    description: Relative (current environment)
+
+tags:
+  - name: Health
+  - name: User
+  - name: Creative
+  - name: Waitlist
+  - name: Resume
+  - name: Profile
+  - name: Client Profile
+  - name: Phone Verification
+  - name: Cult
+  - name: Portfolio
+  - name: Discover
+  - name: Reviews
+  - name: Listings
+  - name: Saved
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ---------------------------------------------------------------- Health
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            example: OK
+                          timestamp:
+                            type: string
+                            format: date-time
+                          uptime:
+                            type: number
+                          environment:
+                            type: string
+
+  # ---------------------------------------------------------------- User
+  /user/role:
+    post:
+      tags: [User]
+      summary: Set/update the authenticated user's role
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [CLIENT, CREATIVE, ADMIN]
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /user/check-username:
+    get:
+      tags: [User]
+      summary: Check whether a username is available
+      security: []
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Availability result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          available:
+                            type: boolean
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ---------------------------------------------------------------- Creative
+  /creative/onboarding:
+    post:
+      tags: [Creative]
+      summary: Complete creative onboarding (username, skills, education, experience, resume)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreativeOnboardingInput'
+      responses:
+        '200':
+          description: Onboarding completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ---------------------------------------------------------------- Waitlist
+  /waitlist:
+    post:
+      tags: [Waitlist]
+      summary: Join the waitlist
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, joinAs]
+              properties:
+                email:
+                  type: string
+                  format: email
+                joinAs:
+                  type: string
+                  enum: [FREELANCER, COLLECTIVE, CLIENT]
+      responses:
+        '201':
+          description: Added to waitlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /waitlist/count:
+    get:
+      tags: [Waitlist]
+      summary: Get current waitlist count
+      security: []
+      responses:
+        '200':
+          description: Waitlist count
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          count:
+                            type: integer
+
+  # ---------------------------------------------------------------- Resume
+  /resume/parse:
+    post:
+      tags: [Resume]
+      summary: Upload and parse a resume PDF
+      description: Feature can be disabled via `RESUME_UPLOAD_ENABLED`; returns 503 when disabled.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [resume]
+              properties:
+                resume:
+                  type: string
+                  format: binary
+                  description: PDF file, max 5MB
+      responses:
+        '200':
+          description: Parsed resume data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: Resume upload feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  # ---------------------------------------------------------------- Profile (creative)
+  /profile:
+    get:
+      tags: [Profile]
+      summary: Get the authenticated user's creative profile
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [Profile]
+      summary: Update profile fields (headline, bio, availability, rate, experience, tools)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                headline:
+                  type: string
+                bio:
+                  type: string
+                availability:
+                  type: string
+                  enum: [AVAILABLE, BUSY, NOT_AVAILABLE]
+                rateType:
+                  type: string
+                  nullable: true
+                  enum: [HOURLY, FIXED, NEGOTIABLE]
+                rateAmount:
+                  type: integer
+                  nullable: true
+                experienceYears:
+                  type: integer
+                  minimum: 0
+                  maximum: 60
+                  nullable: true
+                tools:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 30
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/location:
+    patch:
+      tags: [Profile]
+      summary: Set profile location
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location]
+              properties:
+                location:
+                  type: string
+                  maxLength: 100
+      responses:
+        '200':
+          description: Location updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/avatar:
+    patch:
+      tags: [Profile]
+      summary: Upload/update profile avatar
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: JPEG/PNG/WebP, max 2MB
+      responses:
+        '200':
+          description: Avatar updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /profile/cover-image:
+    patch:
+      tags: [Profile]
+      summary: Upload/update profile cover image
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                coverImage:
+                  type: string
+                  format: binary
+                  description: JPEG/PNG/WebP, max 5MB
+      responses:
+        '200':
+          description: Cover image updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /profile/skills:
+    patch:
+      tags: [Profile]
+      summary: Replace profile skills
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [skills]
+              properties:
+                skills:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [name]
+                    properties:
+                      name:
+                        type: string
+                      expertise:
+                        type: string
+                        enum: [BEGINNER, INTERMEDIATE, EXPERT]
+      responses:
+        '200':
+          description: Skills updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/availability:
+    patch:
+      tags: [Profile]
+      summary: Update availability status
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [availability]
+              properties:
+                availability:
+                  type: string
+                  enum: [AVAILABLE, BUSY, NOT_AVAILABLE]
+      responses:
+        '200':
+          description: Availability updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/education:
+    patch:
+      tags: [Profile]
+      summary: Replace education history
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [education]
+              properties:
+                education:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EducationItem'
+      responses:
+        '200':
+          description: Education updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/experience:
+    patch:
+      tags: [Profile]
+      summary: Replace work experience history
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [experiences]
+              properties:
+                experiences:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ExperienceItem'
+      responses:
+        '200':
+          description: Experience updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ---------------------------------------------------------------- Client Profile
+  /client-profile:
+    get:
+      tags: [Client Profile]
+      summary: Get the authenticated client's profile
+      description: Requires CLIENT role.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Client profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    patch:
+      tags: [Client Profile]
+      summary: Update client profile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clientType:
+                  type: string
+                  enum: [INDIVIDUAL, COMPANY]
+                companyName:
+                  type: string
+                industry:
+                  type: string
+                companySize:
+                  type: string
+                foundedYear:
+                  type: string
+                  pattern: '^(19|20)\d{2}$'
+                bio:
+                  type: string
+                website:
+                  type: string
+                phoneNumber:
+                  type: string
+                location:
+                  type: string
+                  maxLength: 100
+      responses:
+        '200':
+          description: Client profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /client-profile/stats:
+    get:
+      tags: [Client Profile]
+      summary: Get client statistics (e.g. listings, hires)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Client stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /client-profile/avatar:
+    patch:
+      tags: [Client Profile]
+      summary: Upload/update client avatar
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /client-profile/cover-image:
+    patch:
+      tags: [Client Profile]
+      summary: Upload/update client cover image
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                coverImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Cover image updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /client-profile/phone/send-otp:
+    post:
+      tags: [Phone Verification]
+      summary: Send an OTP to a phone number for verification
+      description: Rate-limited endpoint. Requires CLIENT role.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phoneNumber]
+              properties:
+                phoneNumber:
+                  type: string
+                  minLength: 5
+                  maxLength: 25
+      responses:
+        '200':
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          description: Too many OTP requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  /client-profile/phone/verify-otp:
+    post:
+      tags: [Phone Verification]
+      summary: Verify an OTP code for a phone number
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phoneNumber, otpCode]
+              properties:
+                phoneNumber:
+                  type: string
+                  minLength: 5
+                  maxLength: 25
+                otpCode:
+                  type: string
+                  minLength: 6
+                  maxLength: 6
+                  pattern: '^\d{6}$'
+      responses:
+        '200':
+          description: Phone number verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ---------------------------------------------------------------- Cult
+  /cult:
+    get:
+      tags: [Cult]
+      summary: List/search cults (public)
+      security: []
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: skill
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Paginated list of cults
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnvelope'
+    post:
+      tags: [Cult]
+      summary: Create a new cult
+      description: Requires authentication, verified email, and CREATIVE role.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                slug:
+                  type: string
+                  pattern: '^[a-z0-9-]+$'
+                  maxLength: 60
+                tagline:
+                  type: string
+                  maxLength: 150
+                bio:
+                  type: string
+                  maxLength: 1000
+                avatarUrl:
+                  type: string
+      responses:
+        '201':
+          description: Cult created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /cult/my:
+    get:
+      tags: [Cult]
+      summary: List cults the authenticated creative belongs to
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Cults list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cult/invites/my:
+    get:
+      tags: [Cult]
+      summary: List pending cult invites for the authenticated creative
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Invites list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cult/invites/{inviteId}/respond:
+    post:
+      tags: [Cult]
+      summary: Accept or decline a cult invite
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/InviteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [ACCEPT, DECLINE]
+      responses:
+        '200':
+          description: Invite response recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /cult/{slug}:
+    get:
+      tags: [Cult]
+      summary: Get a cult by slug
+      description: Auth optional — response may include viewer-specific fields (e.g. membership) when authenticated.
+      security:
+        - bearerAuth: []
+        - {}
+      parameters:
+        - $ref: '#/components/parameters/CultSlug'
+      responses:
+        '200':
+          description: Cult
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Cult]
+      summary: Update a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                tagline:
+                  type: string
+                  maxLength: 150
+                bio:
+                  type: string
+                  maxLength: 1000
+                avatarUrl:
+                  type: string
+      responses:
+        '200':
+          description: Cult updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Cult]
+      summary: Disband a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      responses:
+        '200':
+          description: Cult disbanded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cult/{cultId}/members:
+    get:
+      tags: [Cult]
+      summary: List members of a cult
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      responses:
+        '200':
+          description: Members list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cult/{cultId}/invites:
+    post:
+      tags: [Cult]
+      summary: Invite a user to a cult (by username or email)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Provide exactly one of targetUsername or targetEmailId.
+              properties:
+                targetUsername:
+                  type: string
+                targetEmailId:
+                  type: string
+                  format: email
+                message:
+                  type: string
+                  maxLength: 500
+      responses:
+        '201':
+          description: Invite created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /cult/{cultId}/members/{membershipId}:
+    delete:
+      tags: [Cult]
+      summary: Remove a member from a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Member removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cult/{cultId}/members/{membershipId}/leave:
+    post:
+      tags: [Cult]
+      summary: Leave a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Left cult
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cult/{cultId}/members/{membershipId}/role:
+    patch:
+      tags: [Cult]
+      summary: Update a cult member's role
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+        - $ref: '#/components/parameters/MembershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  description: Cult member role (e.g. OWNER, ADMIN, MEMBER)
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ---------------------------------------------------------------- Portfolio
+  /portfolio/mine:
+    get:
+      tags: [Portfolio]
+      summary: List the authenticated creative's own portfolio items
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Portfolio items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /portfolio/credits/my:
+    get:
+      tags: [Portfolio]
+      summary: List pending portfolio credit requests for the authenticated creative
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Pending credits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /portfolio/credits/{creditId}/respond:
+    post:
+      tags: [Portfolio]
+      summary: Accept or decline a portfolio credit request
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: creditId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [ACCEPT, DECLINE]
+      responses:
+        '200':
+          description: Credit response recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /portfolio/cult/{cultId}:
+    get:
+      tags: [Portfolio]
+      summary: List a cult's portfolio items (public)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Portfolio items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnvelope'
+
+  /portfolio/profile/{username}:
+    get:
+      tags: [Portfolio]
+      summary: List a creative's portfolio items by username (public)
+      security: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Portfolio items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /portfolio:
+    post:
+      tags: [Portfolio]
+      summary: Create a new portfolio item
+      description: Requires authentication, verified email, and CREATIVE role.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, ownerType]
+              properties:
+                title:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 2000
+                coverImage:
+                  type: string
+                  format: binary
+                  description: Optional cover image file (JPEG/PNG/WebP, max 5MB)
+                mediaUrls:
+                  type: array
+                  items:
+                    type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                projectDate:
+                  type: string
+                  format: date-time
+                ownerType:
+                  type: string
+                  enum: [FREELANCER, CULT]
+                cultId:
+                  type: string
+                  description: Required when ownerType is CULT, forbidden when FREELANCER
+      responses:
+        '201':
+          description: Portfolio item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /portfolio/{id}/credits:
+    post:
+      tags: [Portfolio]
+      summary: Add a credit (collaborator) to a portfolio item
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PortfolioItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Provide exactly one of targetUsername or targetEmailId.
+              properties:
+                targetUsername:
+                  type: string
+                targetEmailId:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  maxLength: 50
+      responses:
+        '201':
+          description: Credit added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /portfolio/{id}/credits/{creditId}:
+    delete:
+      tags: [Portfolio]
+      summary: Remove a credit from a portfolio item
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PortfolioItemId'
+        - name: creditId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Credit removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /portfolio/{id}:
+    get:
+      tags: [Portfolio]
+      summary: Get a portfolio item by ID (public)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PortfolioItemId'
+      responses:
+        '200':
+          description: Portfolio item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Portfolio]
+      summary: Update a portfolio item
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PortfolioItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 2000
+                coverImageUrl:
+                  type: string
+                mediaUrls:
+                  type: array
+                  items:
+                    type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                projectDate:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Portfolio item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Portfolio]
+      summary: Delete a portfolio item
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PortfolioItemId'
+      responses:
+        '200':
+          description: Portfolio item deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------- Discover
+  /discover/freelancers:
+    get:
+      tags: [Discover]
+      summary: List/search freelancers (public)
+      security: []
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: skill
+          in: query
+          schema: { type: string }
+        - name: availability
+          in: query
+          schema:
+            type: string
+            enum: [AVAILABLE, BUSY, NOT_AVAILABLE]
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [FEATURED, RATING, PRICE_LOW, PRICE_HIGH, PROJECTS]
+            default: FEATURED
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 12 }
+      responses:
+        '200':
+          description: Paginated freelancers list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnvelope'
+
+  /discover/freelancers/{username}:
+    get:
+      tags: [Discover]
+      summary: Get a freelancer's public profile by username
+      security: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Freelancer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------- Reviews
+  /reviews/{username}:
+    get:
+      tags: [Reviews]
+      summary: List reviews for a creative (public)
+      security: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Paginated reviews list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnvelope'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Reviews]
+      summary: Create a review for a creative
+      description: Requires authentication and a verified email.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                  maxLength: 1000
+      responses:
+        '201':
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /reviews/{reviewId}:
+    delete:
+      tags: [Reviews]
+      summary: Delete a review
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Review deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------- Listings
+  /listings:
+    get:
+      tags: [Listings]
+      summary: List the authenticated client's listings
+      description: Requires authentication and CLIENT role.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [DRAFT, PUBLISHED, CLOSED, ARCHIVED]
+        - name: page
+          in: query
+          schema: { type: integer }
+        - name: limit
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Paginated listings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Listings]
+      summary: Create a new listing
+      description: Requires authentication, verified email, and CLIENT role.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingInput'
+      responses:
+        '201':
+          description: Listing created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /listings/{id}:
+    get:
+      tags: [Listings]
+      summary: Get a single listing by ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      responses:
+        '200':
+          description: Listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Listings]
+      summary: Update a listing
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingInput'
+      responses:
+        '200':
+          description: Listing updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Listings]
+      summary: Delete a listing
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      responses:
+        '200':
+          description: Listing deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /listings/{id}/status:
+    patch:
+      tags: [Listings]
+      summary: Update a listing's status
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [DRAFT, PUBLISHED, CLOSED, ARCHIVED]
+      responses:
+        '200':
+          description: Listing status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------- Saved
+  /saved:
+    get:
+      tags: [Saved]
+      summary: List saved items (creatives and/or cults)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [ALL, CREATIVE, CULT]
+            default: ALL
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Paginated saved items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /saved/ids:
+    get:
+      tags: [Saved]
+      summary: Get IDs of all saved items (for client-side active-state checks)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Saved item IDs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          creativeProfileIds:
+                            type: array
+                            items:
+                              type: string
+                          cultIds:
+                            type: array
+                            items:
+                              type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /saved/creative/{creativeProfileId}:
+    post:
+      tags: [Saved]
+      summary: Save a creative
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CreativeProfileId'
+      responses:
+        '201':
+          description: Creative saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Saved]
+      summary: Unsave a creative
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CreativeProfileId'
+      responses:
+        '200':
+          description: Creative unsaved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /saved/creative/{creativeProfileId}/toggle:
+    post:
+      tags: [Saved]
+      summary: Toggle saved state for a creative
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CreativeProfileId'
+      responses:
+        '200':
+          description: Toggled saved state
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          saved:
+                            type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /saved/cult/{cultId}:
+    post:
+      tags: [Saved]
+      summary: Save a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      responses:
+        '201':
+          description: Cult saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Saved]
+      summary: Unsave a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      responses:
+        '200':
+          description: Cult unsaved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /saved/cult/{cultId}/toggle:
+    post:
+      tags: [Saved]
+      summary: Toggle saved state for a cult
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CultId'
+      responses:
+        '200':
+          description: Toggled saved state
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          saved:
+                            type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Session established via better-auth. In this app the session is typically carried
+        via an httpOnly cookie set by `/api/auth/*`; the bearer scheme is shown here for
+        tooling convenience when testing with a token.
+
+  parameters:
+    CultId:
+      name: cultId
+      in: path
+      required: true
+      schema: { type: string }
+    CultSlug:
+      name: slug
+      in: path
+      required: true
+      schema: { type: string }
+    MembershipId:
+      name: membershipId
+      in: path
+      required: true
+      schema: { type: string }
+    InviteId:
+      name: inviteId
+      in: path
+      required: true
+      schema: { type: string }
+    PortfolioItemId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    ListingId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    CreativeProfileId:
+      name: creativeProfileId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Forbidden:
+      description: Authenticated but not permitted (wrong role / unverified email)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data: {}
+        message:
+          type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    PaginatedEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items: {}
+        message:
+          type: string
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        statusCode:
+          type: integer
+        context:
+          type: object
+          additionalProperties: true
+        stack:
+          type: string
+
+    ResponseMeta:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+        method:
+          type: string
+        statusCode:
+          type: integer
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    EducationItem:
+      type: object
+      required: [school, degree, fieldOfStudy, country, yearOfGraduation]
+      properties:
+        school:
+          type: string
+          minLength: 2
+        degree:
+          type: string
+          description: e.g. BACHELORS, MASTERS, PHD, ASSOCIATE, DIPLOMA
+        fieldOfStudy:
+          type: string
+          minLength: 2
+        country:
+          type: string
+          minLength: 2
+        yearOfGraduation:
+          type: string
+          pattern: '^(19|20)\d{2}$'
+
+    ExperienceItem:
+      type: object
+      required: [title, employmentType, companyName, industry, startDate]
+      properties:
+        title:
+          type: string
+          minLength: 2
+        employmentType:
+          type: string
+          description: e.g. FULL_TIME, PART_TIME, CONTRACT, FREELANCE, INTERNSHIP
+        companyName:
+          type: string
+        industry:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        currentlyWorking:
+          type: boolean
+          default: false
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+          default: []
+
+    CreativeOnboardingInput:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[a-zA-Z0-9_]+$'
+        headline:
+          type: string
+        bio:
+          type: string
+        skills:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              expertise:
+                type: string
+                enum: [BEGINNER, INTERMEDIATE, EXPERT]
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/EducationItem'
+        experience:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExperienceItem'
+        resumeUrl:
+          type: string
+        resumePublicId:
+          type: string
+
+    ListingInput:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+          minLength: 5
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 2000
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, CLOSED, ARCHIVED]
+        locationType:
+          type: string
+          description: e.g. REMOTE, ONSITE, HYBRID
+        location:
+          type: string
+          maxLength: 100
+        budgetMin:
+          type: integer
+          minimum: 1
+        budgetMax:
+          type: integer
+          minimum: 1
+        rateType:
+          type: string
+          description: e.g. HOURLY, FIXED, NEGOTIABLE
+        currency:
+          type: string
+        employmentType:
+          type: string
+          description: e.g. FULL_TIME, PART_TIME, CONTRACT, FREELANCE, INTERNSHIP
+        skills:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 20
+        deadline:
+          type: string
+          format: date-time
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: string
+          maxLength: 50

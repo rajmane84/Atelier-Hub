@@ -11,7 +11,8 @@
     "prisma:studio": "bun --bun prisma studio",
     "prisma:reset": "bun --bun prisma migrate reset --force",
     "prisma:format": "bun --bun prisma format",
-    "prisma:seed": "bun run prisma/seed.ts"
+    "prisma:seed": "bun run prisma/seed.ts",
+    "docs": "bunx @redocly/cli build-docs swagger.yaml -o swagger.html && (xdg-open swagger.html || open swagger.html)"
   },
   "devDependencies": {
     "@types/bun": "latest",

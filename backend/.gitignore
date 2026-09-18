@@ -36,3 +36,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 /src/generated/prisma
 
 certs/
+
+# generated API docs
+swagger.html
