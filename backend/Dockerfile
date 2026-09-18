@@ -23,6 +23,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5000
 
+# New Relic APM agent settings (license key & app name are injected at
+# runtime via env vars / env_file — never baked into the image)
+ENV NEW_RELIC_APP_NAME="atelier-hub-backend"
+ENV NEW_RELIC_NO_CONFIG_FILE=false
+ENV NEW_RELIC_LOG=stdout
+
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
@@ -32,6 +38,7 @@ COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/clie
 
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src ./src
+COPY newrelic.cjs ./
 
 # Use non-root bun user for security best practice
 USER bun

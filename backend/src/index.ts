@@ -1,3 +1,4 @@
+import 'newrelic';
 import app from './app';
 import { prisma } from './util/prisma';
 import { env } from './util/env';

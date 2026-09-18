@@ -39,6 +39,7 @@
     "express-rate-limit": "^8.6.1",
     "geoip-lite": "^2.0.3",
     "multer": "^2.2.0",
+    "newrelic": "^14.5.0",
     "nodemailer": "^9.0.3",
     "openai": "^7.2.0",
     "pdf-parse": "^2.4.5",
